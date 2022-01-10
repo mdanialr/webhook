@@ -13,18 +13,17 @@ func SetupRoutes(app *fiber.App) {
 	// Built-in fiber middlewares
 	app.Use(recover.New())
 	// Use log file only in production
-	var fConf logger.Config
 	switch config.Conf.EnvIsProd {
 	case true:
-		fConf = logger.Config{
+		fConf := logger.Config{
 			Format:     "[${time}] ${status} | ${method} - ${latency} - ${ip} | ${path}\n",
 			TimeFormat: "02-Jan-2006 15:04:05",
 			Output:     config.Conf.LogFile,
 		}
+		app.Use(logger.New(fConf))
 	case false:
-		fConf = logger.ConfigDefault
+		app.Use(logger.New())
 	}
-	app.Use(logger.New(fConf))
 
 	// This app's endpoints
 	app.Get("/", handlers.Home)

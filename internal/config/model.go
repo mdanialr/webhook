@@ -28,6 +28,7 @@ type Config struct {
 	Keyword   string  `yaml:"keyword"`
 	Usr       string  `yaml:"username"`
 	LogDir    string  `yaml:"log"`
+	MaxWorker int     `yaml:"max_worker"`
 	Service   Service `yaml:"service"`
 	LogFile   *os.File
 	SHA1      [20]byte
@@ -63,6 +64,11 @@ func (c *Config) CheckConfigFile() error {
 	}
 	if c.Usr == "" {
 		c.Usr = "empty"
+	}
+
+	// Set max workers default to 1 only if empty or has value less than 1
+	if c.MaxWorker < 1 {
+		c.MaxWorker = 1
 	}
 
 	// Validate required fields.

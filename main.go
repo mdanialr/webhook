@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/mdanialr/webhook/internal/handlers"
+	"github.com/mdanialr/webhook/internal/helpers"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -35,5 +36,14 @@ func init() {
 	// First thing first, init and load the config file
 	if err := config.LoadConfigFromFile(); err != nil {
 		log.Fatalln("failed to load config file:", err)
+	}
+
+	WorkerChan := make(chan string)
+	// Assign the chan to global var in helpers, so it can be accessed by handlers
+	// to send the job later
+	helpers.WorkerChan = WorkerChan
+	// Spawn workers as many as on max worker in config
+	for w := 1; w <= config.Conf.MaxWorker; w++ {
+		go helpers.CDWorker(WorkerChan)
 	}
 }

@@ -23,7 +23,6 @@ func PullRepo(repo string) {
 	}
 
 	log.Println("\n" + string(res))
-	//NzLogInfo.Println("\n" + string(res))
 }
 
 // lookupRepo lookup for the repo that match given repo name then

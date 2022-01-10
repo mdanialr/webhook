@@ -16,6 +16,10 @@ cp config.yaml.example config.yaml
 ```
 go build -o bin/webhook main.go
 ```
+or
+```
+make
+```
 6. Run the binary file.
 ```
 ./bin/webhook

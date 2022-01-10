@@ -32,6 +32,7 @@ func main() {
 }
 
 func init() {
+	// First thing first, init and load the config file
 	if err := config.LoadConfigFromFile(); err != nil {
 		log.Fatalln("failed to load config file:", err)
 	}

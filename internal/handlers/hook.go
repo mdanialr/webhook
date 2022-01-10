@@ -51,7 +51,7 @@ func Hook(c *fiber.Ctx) error {
 	}
 
 	if isReload {
-		go helpers.PullRepo(repo)
+		helpers.WorkerChan <- repo
 	}
 
 	return c.JSON(fiber.Map{
@@ -59,5 +59,6 @@ func Hook(c *fiber.Ctx) error {
 		"message":   message,
 		"branch":    branchName,
 		"reload":    isReload,
+		"repo":      repo,
 	})
 }

@@ -8,9 +8,9 @@ import (
 	"strings"
 )
 
-// PullRepo pull from remote repo if repo name found in config
+// pullRepo pull from remote repo if repo name found in config
 // file.
-func PullRepo(repo string) {
+func pullRepo(repo string) {
 	r, err := lookupRepo(repo, config.Conf.Service)
 	if err != nil {
 		log.Println(err)

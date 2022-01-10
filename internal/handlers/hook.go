@@ -12,7 +12,7 @@ import (
 func Hook(c *fiber.Ctx) error {
 	// check if there is new config value by checking the new hash
 	// file value against old hash.
-	if err := helpers.ReloadConfigFile(); err != nil {
+	if err := config.ReloadConfig(); err != nil {
 		log.Println("failed when try to reload and repopulate config file:", err)
 	}
 

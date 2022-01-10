@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-// ReloadConfigFile re-reload and repopulate config when there is new
+// ReloadConfigFile reload and repopulate config when there is new
 // value in config file by checking old hash against new hash.
 func ReloadConfigFile() error {
 	f, err := os.ReadFile("config.yaml")

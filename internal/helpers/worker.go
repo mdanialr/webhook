@@ -9,6 +9,6 @@ var WorkerChan chan string
 func CDWorker(jobChan <-chan string) {
 	for job := range jobChan {
 		log.Println("Working on:", job)
-		//pullRepo(job)
+		pullRepo(job)
 	}
 }

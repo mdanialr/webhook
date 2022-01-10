@@ -1,0 +1,17 @@
+env: #dev|prod default to dev
+host: #default to localhost
+port: #default to 5050
+secret: #required
+keyword: #default to empty
+username: #default to empty
+log: #default to ./logs/
+max_worker: #default to 1. worker to do git pull.
+service:
+  - repo:
+      name: #required. the name of the repo should be match as in the url '/hook/{repo}'
+      root: #required. where git pull should be executed
+      opt_cmd: #optional. shell command that get executed after git pull
+  - repo:
+      name: #required. the name of the repo should be match as in the url '/hook/{repo}'
+      root: #required. where git pull should be executed
+      opt_cmd: #optional. shell command that get executed after git pull

@@ -46,8 +46,3 @@ WantedBy=multi-user.target
 ```
 sudo systemctl enable webhook.service --now
 ```
-# SELinux Issue with Nginx
-__to make this service work with nginx:__
-```
-sudo setsebool httpd_can_network_connect 1
-```

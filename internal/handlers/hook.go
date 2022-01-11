@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/mdanialr/webhook/internal/config"
 	"github.com/mdanialr/webhook/internal/helpers"
@@ -19,7 +20,7 @@ func Hook(c *fiber.Ctx) error {
 
 	reqHook := new(models.Request)
 	if err := c.BodyParser(reqHook); err != nil {
-		return err
+		return fmt.Errorf("failed parsing request body: %v", err)
 	}
 
 	confMsgKey := config.Conf.Keyword

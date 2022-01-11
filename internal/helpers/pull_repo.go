@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"errors"
+	"fmt"
 	"github.com/mdanialr/webhook/internal/config"
 	"os/exec"
 	"strings"
@@ -33,8 +33,7 @@ func lookupRepo(repo string, srv config.Service) (config.Repos, error) {
 		}
 	}
 
-	errMsg := "repo name not found in config file"
-	return config.Repos{}, errors.New(errMsg)
+	return config.Repos{}, fmt.Errorf("repo name not found in config file")
 }
 
 // parsePullCommand parse all necessary git command and append optional

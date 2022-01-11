@@ -4,7 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/mdanialr/webhook/internal/config"
 	"strings"
@@ -40,14 +40,12 @@ func SecretToken(c *fiber.Ctx) error {
 func readReqSig(reqH map[string]string) ([]byte, error) {
 	s := strings.TrimPrefix(reqH["X-Hub-Signature-256"], "sha256=")
 	if s == "" {
-		msg := "missing X-Hub-Signature-256 header in request"
-		return nil, errors.New(msg)
+		return nil, fmt.Errorf("missing X-Hub-Signature-256 header in request")
 	}
 
 	sig, err := hex.DecodeString(s)
 	if err != nil {
-		msg := "failed hex-decoding signature " + s + ": " + err.Error()
-		return nil, errors.New(msg)
+		return nil, fmt.Errorf("failed hex-decoding signature %v: %v", s, err)
 	}
 
 	return sig, nil

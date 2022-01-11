@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"errors"
+	"fmt"
 	"github.com/mdanialr/webhook/internal/config"
 	"log"
 	"os"
@@ -17,8 +17,7 @@ var (
 func InitNzLog() error {
 	fl, err := os.OpenFile(config.Conf.LogDir+"app-log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
 	if err != nil {
-		errMsg := "failed to open|create log file: " + err.Error()
-		return errors.New(errMsg)
+		return fmt.Errorf("failed to open|create log file: %v", err)
 	}
 
 	NzLogInf = log.New(fl, "[INFO] ", log.Ldate|log.Ltime)

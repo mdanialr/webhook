@@ -1,7 +1,7 @@
 package config
 
 import (
-	"errors"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -73,7 +73,7 @@ func (c *Config) CheckConfigFile() error {
 
 	// Validate required fields.
 	if c.Secret == "" {
-		return errors.New("`secret` in config file is empty")
+		return fmt.Errorf("`secret` in config file is empty")
 	}
 
 	return nil
@@ -94,15 +94,13 @@ func (c *Config) SetupLogFile() error {
 
 	// Make sure log dir already exists
 	if err := os.MkdirAll(c.LogDir, 0770); err != nil {
-		errMsg := "failed to create log path: " + err.Error()
-		return errors.New(errMsg)
+		return fmt.Errorf("failed to create log path: %v", err)
 	}
 
 	// Open output log file
 	fl, err := os.OpenFile(c.LogDir+"log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
 	if err != nil {
-		errMsg := "failed to open|create log file: " + err.Error()
-		return errors.New(errMsg)
+		return fmt.Errorf("failed to open|create log file: %v", err)
 	}
 
 	// Assign log file writer to config

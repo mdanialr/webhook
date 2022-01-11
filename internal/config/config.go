@@ -2,7 +2,7 @@ package config
 
 import (
 	"crypto/sha1"
-	"errors"
+	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
 )
@@ -13,23 +13,19 @@ var Conf *Config
 func LoadConfigFromFile() error {
 	yamlFile, err := os.ReadFile("config.yaml")
 	if err != nil {
-		errMsg := "error when load yaml file: " + err.Error()
-		return errors.New(errMsg)
+		return fmt.Errorf("error when load yaml file: %v", err)
 	}
 
 	if err := yaml.Unmarshal(yamlFile, &Conf); err != nil {
-		errMsg := "failed to unmarshal: " + err.Error()
-		return errors.New(errMsg)
+		return fmt.Errorf("failed to unmarshal: %v", err)
 	}
 
 	if err := Conf.CheckConfigFile(); err != nil {
-		errMsg := "failed to check and sanitize config file: " + err.Error()
-		return errors.New(errMsg)
+		return fmt.Errorf("failed to check and sanitize config file: %v", err)
 	}
 
 	if err := Conf.SetupLogFile(); err != nil {
-		errMsg := "failed to setup log fil: " + err.Error()
-		return errors.New(errMsg)
+		return fmt.Errorf("failed to setup log file: %v", err)
 	}
 
 	// hash the file to check if maybe there is new config in

@@ -11,7 +11,7 @@ import (
 func Hook(c *fiber.Ctx) error {
 	// check if there is new config value by checking the new hash
 	// file value against old hash.
-	if err := config.ReloadConfig(); err != nil {
+	if err := helpers.ReloadConfig(); err != nil {
 		helpers.NzLogErr.Println("failed trying to reload and repopulate config file:", err)
 	}
 

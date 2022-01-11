@@ -3,7 +3,6 @@ package helpers
 import (
 	"errors"
 	"github.com/mdanialr/webhook/internal/config"
-	"log"
 	"os/exec"
 	"strings"
 )
@@ -13,16 +12,16 @@ import (
 func pullRepo(repo string) {
 	r, err := lookupRepo(repo, config.Conf.Service)
 	if err != nil {
-		log.Println(err)
+		NzLogErr.Println(err)
 	}
 
 	cmd := parsePullCommand(r)
 	res, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 	if err != nil {
-		log.Println("failed to execute git pull from remote repo:", err)
+		NzLogErr.Println("failed to execute git pull from remote repo:", err)
 	}
 
-	log.Println("\n" + string(res))
+	NzLogInf.Println("\n" + string(res))
 }
 
 // lookupRepo lookup for the repo that match given repo name then

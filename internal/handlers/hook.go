@@ -5,7 +5,6 @@ import (
 	"github.com/mdanialr/webhook/internal/config"
 	"github.com/mdanialr/webhook/internal/helpers"
 	"github.com/mdanialr/webhook/internal/models"
-	"log"
 	"strings"
 )
 
@@ -13,7 +12,7 @@ func Hook(c *fiber.Ctx) error {
 	// check if there is new config value by checking the new hash
 	// file value against old hash.
 	if err := config.ReloadConfig(); err != nil {
-		log.Println("failed when try to reload and repopulate config file:", err)
+		helpers.NzLogErr.Println("failed trying to reload and repopulate config file:", err)
 	}
 
 	repo := c.Params("repo")

@@ -2,7 +2,7 @@ package config
 
 import (
 	"crypto/sha1"
-	"log"
+	"github.com/mdanialr/webhook/internal/helpers"
 	"os"
 )
 
@@ -16,7 +16,7 @@ func ReloadConfig() error {
 
 	sha1Res := sha1.Sum(f)
 	if Conf.SHA1 != sha1Res {
-		log.Println("config file has different hash. repopulate config will be initiated")
+		helpers.NzLogInf.Println("config file has different hash. repopulate config will be initiated")
 		if err := LoadConfigFromFile(); err != nil {
 			return err
 		}

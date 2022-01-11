@@ -28,8 +28,8 @@ func main() {
 
 	routes.SetupRoutes(app)
 
-	log.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)
-	log.Fatalln(app.Listen(fmt.Sprintf("%s:%v", appConfig.Host, appConfig.PortNum)))
+	helpers.NzLogInf.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)
+	helpers.NzLogErr.Fatalln(app.Listen(fmt.Sprintf("%s:%v", appConfig.Host, appConfig.PortNum)))
 }
 
 func init() {

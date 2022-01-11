@@ -37,6 +37,10 @@ func init() {
 	if err := config.LoadConfigFromFile(); err != nil {
 		log.Fatalln("failed to load config file:", err)
 	}
+	// Init internal logging
+	if err := helpers.InitNzLog(); err != nil {
+		log.Fatalln("failed to init internal logging:", err)
+	}
 
 	WorkerChan := make(chan string)
 	// Assign the chan to global var in helpers, so it can be accessed by handlers

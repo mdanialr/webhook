@@ -2,9 +2,10 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/mdanialr/webhook/internal/config"
 	"log"
 	"os"
+
+	"github.com/mdanialr/webhook/internal/config"
 )
 
 var (

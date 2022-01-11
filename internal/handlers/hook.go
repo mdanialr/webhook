@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/mdanialr/webhook/internal/config"
 	"github.com/mdanialr/webhook/internal/helpers"
 	"github.com/mdanialr/webhook/internal/models"
-	"strings"
 )
 
 func Hook(c *fiber.Ctx) error {

@@ -2,9 +2,10 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/mdanialr/webhook/internal/config"
 	"os/exec"
 	"strings"
+
+	"github.com/mdanialr/webhook/internal/config"
 )
 
 // pullRepo pull from remote repo if repo name found in config

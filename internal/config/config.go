@@ -3,8 +3,9 @@ package config
 import (
 	"crypto/sha1"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 var Conf *Config

@@ -3,8 +3,9 @@ package helpers
 import (
 	"crypto/sha1"
 	"fmt"
-	"github.com/mdanialr/webhook/internal/config"
 	"os"
+
+	"github.com/mdanialr/webhook/internal/config"
 )
 
 // ReloadConfig reload and repopulate config when there is new

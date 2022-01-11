@@ -5,9 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/mdanialr/webhook/internal/config"
-	"strings"
 )
 
 // SecretToken middleware check incoming request signature, to make

@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/mdanialr/webhook/internal/handlers"
-	"github.com/mdanialr/webhook/internal/helpers"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mdanialr/webhook/internal/config"
+	"github.com/mdanialr/webhook/internal/handlers"
+	"github.com/mdanialr/webhook/internal/helpers"
 	"github.com/mdanialr/webhook/internal/routes"
 )
 

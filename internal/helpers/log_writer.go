@@ -15,8 +15,8 @@ var (
 
 // InitNzLog init and setup log file to write log about this app
 // internal log.
-func InitNzLog() error {
-	fl, err := os.OpenFile(config.Conf.LogDir+"app-log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
+func InitNzLog(conf config.Config) error {
+	fl, err := os.OpenFile(conf.LogDir+"app-log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
 	if err != nil {
 		return fmt.Errorf("failed to open|create log file: %v", err)
 	}

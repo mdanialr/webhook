@@ -11,6 +11,8 @@ import (
 	"github.com/mdanialr/webhook/internal/routes"
 )
 
+var configFilePath = "config.yaml"
+
 func main() {
 	appConfig := config.Conf
 	var proxyHeader string
@@ -34,11 +36,11 @@ func main() {
 
 func init() {
 	// First thing first, init and load the config file
-	if err := config.LoadConfigFromFile(); err != nil {
+	if err := config.Conf.LoadConfigFromFile(configFilePath); err != nil {
 		log.Fatalln("failed to load config file:", err)
 	}
 	// Init internal logging
-	if err := helpers.InitNzLog(); err != nil {
+	if err := helpers.InitNzLog(config.Conf); err != nil {
 		log.Fatalln("failed to init internal logging:", err)
 	}
 

@@ -8,21 +8,26 @@ import (
 	"github.com/mdanialr/webhook/internal/config"
 )
 
+type pullRepoT struct {
+	Name    string
+	Service config.Service
+}
+
 // pullRepo pull from remote repo if repo name found in config
 // file.
-func pullRepo(repo string) {
-	r, err := lookupRepo(repo, config.Conf.Service)
+func pullRepo(repo pullRepoT) (string, error) {
+	r, err := lookupRepo(repo.Name, repo.Service)
 	if err != nil {
-		NzLogErr.Println(err)
+		return "", fmt.Errorf("lookup repo failed: %v\n", err)
 	}
 
 	cmd := parsePullCommand(r)
 	res, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 	if err != nil {
-		NzLogErr.Println("failed to execute git pull from remote repo:", err)
+		return "", fmt.Errorf("failed to execute git pull from remote repo: %v\n", err)
 	}
 
-	NzLogInf.Println("\n" + string(res))
+	return fmt.Sprintf("\n%v", res), nil
 }
 
 // lookupRepo lookup for the repo that match given repo name then

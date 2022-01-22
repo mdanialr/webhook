@@ -133,7 +133,6 @@ func TestLookupRepo(t *testing.T) {
 		},
 	}
 
-	errMsg := "repo name not found in config file"
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := lookupRepo(tt.repo, tt.srv)
@@ -142,7 +141,7 @@ func TestLookupRepo(t *testing.T) {
 			case true:
 				// Should be error not found and error message as expected also every value should not as expected
 				require.Error(t, err)
-				require.Equal(t, errMsg, err.Error())
+				require.Equal(t, ErrRepoNotFound.Error(), err.Error())
 				assert.NotEqual(t, tt.want.Name, res.Name)
 				assert.NotEqual(t, tt.want.RootPath, res.RootPath)
 				assert.NotEqual(t, tt.want.Cmd, res.Cmd)

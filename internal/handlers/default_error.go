@@ -5,9 +5,9 @@ import "github.com/gofiber/fiber/v2"
 // DefaultError catch all thrown error by this app then
 // return json message instead http.
 func DefaultError(ctx *fiber.Ctx, err error) error {
-	fiberr, ok := err.(*fiber.Error)
+	fibErr, ok := err.(*fiber.Error)
 	if !ok {
-		fiberr = fiber.ErrInternalServerError
+		fibErr = fiber.ErrInternalServerError
 	}
 
 	data := struct {
@@ -15,10 +15,10 @@ func DefaultError(ctx *fiber.Ctx, err error) error {
 		Detail  []interface{} `json:"detail"`
 		Status  int           `json:"status"`
 	}{
-		Message: fiberr.Message,
-		Detail:  []interface{}{fiberr.Error()},
-		Status:  fiberr.Code,
+		Message: fibErr.Message,
+		Detail:  []interface{}{fibErr.Error()},
+		Status:  fibErr.Code,
 	}
 
-	return ctx.Status(fiberr.Code).JSON(data)
+	return ctx.Status(fibErr.Code).JSON(data)
 }

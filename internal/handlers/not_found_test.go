@@ -1,11 +1,12 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDefaultRouteNotFound(t *testing.T) {

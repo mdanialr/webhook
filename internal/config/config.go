@@ -8,33 +8,22 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mdanialr/webhook/internal/service"
 	"gopkg.in/yaml.v3"
 )
-
-// Repo holds data for each single repo.
-type Repo struct {
-	Name     string `yaml:"name"`
-	RootPath string `yaml:"root"`
-	Cmd      string `yaml:"opt_cmd"`
-}
-
-// Service holds list of data for all repos.
-type Service []struct {
-	Repos Repo `yaml:"repo"`
-}
 
 // Model holds data from config file.
 type Model struct {
 	EnvIsProd bool
-	Env       string  `yaml:"env"`
-	Host      string  `yaml:"host"`
-	PortNum   uint16  `yaml:"port"`
-	Secret    string  `yaml:"secret"`
-	Keyword   string  `yaml:"keyword"`
-	Usr       string  `yaml:"username"`
-	LogDir    string  `yaml:"log"`
-	MaxWorker int     `yaml:"max_worker"`
-	Service   Service `yaml:"service"`
+	Env       string        `yaml:"env"`
+	Host      string        `yaml:"host"`
+	PortNum   uint16        `yaml:"port"`
+	Secret    string        `yaml:"secret"`
+	Keyword   string        `yaml:"keyword"`
+	Usr       string        `yaml:"username"`
+	LogDir    string        `yaml:"log"`
+	MaxWorker int           `yaml:"max_worker"`
+	Service   service.Model `yaml:"service"`
 	LogFile   *os.File
 }
 

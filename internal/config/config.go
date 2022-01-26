@@ -1,37 +1,128 @@
 package config
 
 import (
-	"crypto/sha1"
+	"bytes"
+	"crypto/md5"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
 
-var Conf Config
+// Repo holds data for each single repo.
+type Repo struct {
+	Name     string `yaml:"name"`
+	RootPath string `yaml:"root"`
+	Cmd      string `yaml:"opt_cmd"`
+}
 
-// LoadConfigFromFile load config.yml file and assign it to Conf.
-func (c *Config) LoadConfigFromFile(yamlFilePath string) error {
-	yamlFile, err := os.ReadFile(yamlFilePath)
+// Service holds list of data for all repos.
+type Service []struct {
+	Repos Repo `yaml:"repo"`
+}
+
+// Model holds data from config file.
+type Model struct {
+	EnvIsProd bool
+	Env       string  `yaml:"env"`
+	Host      string  `yaml:"host"`
+	PortNum   uint16  `yaml:"port"`
+	Secret    string  `yaml:"secret"`
+	Keyword   string  `yaml:"keyword"`
+	Usr       string  `yaml:"username"`
+	LogDir    string  `yaml:"log"`
+	MaxWorker int     `yaml:"max_worker"`
+	Service   Service `yaml:"service"`
+	LogFile   *os.File
+}
+
+// NewConfig read io.Reader then map and load the value to the returned Model.
+func NewConfig(fileBuf io.Reader) (mod *Model, err error) {
+	buf := new(bytes.Buffer)
+
+	if _, err := buf.ReadFrom(fileBuf); err != nil {
+		return mod, fmt.Errorf("failed to read from file buffer: %v", err)
+	}
+
+	if err := yaml.Unmarshal(buf.Bytes(), &mod); err != nil {
+		return mod, fmt.Errorf("failed to unmarshal: %v", err)
+	}
+
+	return
+}
+
+// IsDifferentHash hash (md5) two input then compare it. res will always be
+// false if there are errors. Otherwise, depend on the hash compare result
+func IsDifferentHash(x io.Reader, y io.Reader) (res bool, err error) {
+	xH, yH := md5.New(), md5.New()
+
+	if _, err := io.Copy(xH, x); err != nil {
+		return true, fmt.Errorf("failed copying first file: %v", err)
+	}
+	if _, err := io.Copy(yH, y); err != nil {
+		return true, fmt.Errorf("failed copying second file: %v", err)
+	}
+
+	return bytes.Compare(xH.Sum(nil), yH.Sum(nil)) == 0, nil
+}
+
+// ReloadConfig reload and repopulate config from given io.Reader.
+func (m *Model) ReloadConfig(fileBuf io.Reader) error {
+	newM, err := NewConfig(fileBuf)
 	if err != nil {
-		return fmt.Errorf("error when load yaml file: %v", err)
+		return fmt.Errorf("failed to create new config from input file buffer: %v", err)
 	}
 
-	if err := yaml.Unmarshal(yamlFile, &c); err != nil {
-		return fmt.Errorf("failed to unmarshal: %v", err)
-	}
-
-	if err := c.CheckConfigFile(); err != nil {
-		return fmt.Errorf("failed to check and sanitize config file: %v", err)
-	}
-
-	if err := c.SetupLogFile(); err != nil {
-		return fmt.Errorf("failed to setup log file: %v", err)
-	}
-
-	// hash the file to check if maybe there is new config in
-	// the future.
-	c.SHA1 = sha1.Sum(yamlFile)
+	m = newM
 
 	return nil
+}
+
+// Sanitization check and sanitize config Model's instance.
+func (m *Model) Sanitization() error {
+	if m.Env == "" || (m.Env != "dev" && m.Env != "prod") {
+		m.Env = "dev"
+	}
+	if strings.HasPrefix(m.Env, "prod") {
+		m.EnvIsProd = true
+	}
+
+	if m.Host == "" {
+		m.Host = "localhost"
+	}
+
+	if m.PortNum == 0 {
+		m.PortNum = 5050
+	}
+
+	if m.Keyword == "" {
+		m.Keyword = "empty"
+	}
+
+	if m.Usr == "" {
+		m.Usr = "empty"
+	}
+
+	if m.MaxWorker <= 0 {
+		m.MaxWorker = 1
+	}
+
+	if m.Secret == "" {
+		return fmt.Errorf("`secret` is required")
+	}
+
+	return nil
+}
+
+// SanitizationLog check and sanitize things related to log.
+func (m *Model) SanitizationLog() {
+	if m.LogDir == "" {
+		m.LogDir = "./log/"
+	}
+
+	if !strings.HasSuffix(m.LogDir, "/") {
+		m.LogDir += "/"
+	}
 }

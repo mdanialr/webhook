@@ -33,5 +33,5 @@ func SetupRoutes(app *fiber.App) {
 	)
 
 	// Custom middlewares AFTER endpoints
-	app.Use(handlers.DefaultRouteFound)
+	app.Use(handlers.DefaultRouteNotFound)
 }

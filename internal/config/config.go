@@ -2,7 +2,9 @@ package config
 
 import (
 	"bytes"
+	"crypto/hmac"
 	"crypto/md5"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"os"
@@ -114,4 +116,13 @@ func (m *Model) SanitizationLog() {
 	if !strings.HasSuffix(m.LogDir, "/") {
 		m.LogDir += "/"
 	}
+}
+
+// GetSHA256Signature get secret from config file.
+func (m *Model) GetSHA256Signature(in []byte) []byte {
+	secret := []byte(m.Secret)
+	mac := hmac.New(sha256.New, secret)
+	mac.Write(in)
+
+	return mac.Sum(nil)
 }

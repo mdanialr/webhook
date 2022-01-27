@@ -455,6 +455,34 @@ func TestSanitization_Secret(t *testing.T) {
 	}
 }
 
+func TestGetSHA256Signature(t *testing.T) {
+	testCases := []struct {
+		name   string
+		sample Model
+		input  []byte
+		expect []byte
+	}{
+		{
+			name:   "1# Should always return byte w 32 length",
+			sample: Model{Secret: "123"},
+			input:  []byte{51, 52, 53},
+			expect: []byte{72, 206, 203, 202, 192, 235, 177, 216, 188, 12, 57, 93, 92, 199, 66, 200, 240, 234, 245, 229, 150, 150, 168, 224, 70, 47, 250, 117, 153, 7, 129, 223},
+		},
+		{
+			name:   "2# Should always return byte w 32 length",
+			sample: Model{Secret: "321"},
+			expect: []byte{134, 103, 135, 124, 79, 17, 222, 100, 44, 154, 116, 140, 56, 163, 126, 78, 138, 197, 89, 119, 86, 227, 21, 43, 235, 187, 140, 83, 103, 162, 181, 236},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			out := tt.sample.GetSHA256Signature(tt.input)
+			assert.Equal(t, tt.expect, out)
+		})
+	}
+}
+
 func TestSanitizationLog(t *testing.T) {
 	testCases := []struct {
 		name   string

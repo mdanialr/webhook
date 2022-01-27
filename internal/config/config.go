@@ -118,7 +118,8 @@ func (m *Model) SanitizationLog() {
 	}
 }
 
-// GetSHA256Signature get secret from config file.
+// GetSHA256Signature get hmac hash from combination of Model's secret and
+// input bytes.
 func (m *Model) GetSHA256Signature(in []byte) []byte {
 	secret := []byte(m.Secret)
 	mac := hmac.New(sha256.New, secret)

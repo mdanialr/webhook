@@ -14,6 +14,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Interface signatures to implement this config.
+type Interface interface {
+	ReloadConfig(fileBuf io.Reader) error
+	Sanitization() error
+	SanitizationLog()
+	GetSHA256Signature(in []byte) []byte
+}
+
 // Model holds data from config file.
 type Model struct {
 	EnvIsProd bool

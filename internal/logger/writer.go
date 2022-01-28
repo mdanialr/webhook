@@ -8,6 +8,10 @@ import (
 	"github.com/mdanialr/webhook/internal/config"
 )
 
+type Interface interface {
+	Println(...interface{})
+}
+
 var (
 	InfL *log.Logger
 	ErrL *log.Logger

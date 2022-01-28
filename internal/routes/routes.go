@@ -6,10 +6,11 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/mdanialr/webhook/internal/config"
 	"github.com/mdanialr/webhook/internal/handlers"
+	nzLog "github.com/mdanialr/webhook/internal/logger"
 	"github.com/mdanialr/webhook/internal/middlewares"
 )
 
-func SetupRoutes(app *fiber.App, conf *config.Model) {
+func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface) {
 	// Built-in fiber middlewares
 	app.Use(recover.New())
 	// Use log file only in production
@@ -28,6 +29,7 @@ func SetupRoutes(app *fiber.App, conf *config.Model) {
 	// This app's endpoints
 	app.Get("/", handlers.Home)
 	app.Post("/hook/:repo",
+		middlewares.ReloadConfig(conf, l),
 		middlewares.SecretToken(conf),
 		handlers.Hook(conf),
 	)

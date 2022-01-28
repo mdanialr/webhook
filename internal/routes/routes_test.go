@@ -6,18 +6,23 @@ import (
 	"testing"
 )
 
+type fakeLogger struct{}
+
+func (f *fakeLogger) Println(_ ...interface{}) {}
+
 func TestSetupRoutes(t *testing.T) {
+
 	t.Run("1# Success test", func(t *testing.T) {
 		conf := config.Model{Secret: "1"}
 		app := fiber.New()
 
-		SetupRoutes(app, &conf)
+		SetupRoutes(app, &conf, &fakeLogger{})
 	})
 
 	t.Run("2# Success test", func(t *testing.T) {
 		conf := config.Model{Secret: "1", EnvIsProd: true}
 		app := fiber.New()
 
-		SetupRoutes(app, &conf)
+		SetupRoutes(app, &conf, &fakeLogger{})
 	})
 }

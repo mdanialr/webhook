@@ -1,9 +1,10 @@
 package logger
 
 import (
+	"testing"
+
 	"github.com/mdanialr/webhook/internal/config"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestInitLogger(t *testing.T) {

@@ -6,8 +6,24 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mdanialr/webhook/internal/config"
-	"github.com/mdanialr/webhook/internal/models"
 )
+
+// request hold the most outer scope of incoming JSON from GitHub Webhook
+type request struct {
+	Commits []commit `json:"commits"`
+	Branch  string   `json:"ref"`
+}
+
+// commit hold message that identified whether it contains the necessary char or not
+type commit struct {
+	Message   string    `json:"message"`
+	Committer committer `json:"committer"`
+}
+
+// committer hold who did the commit
+type committer struct {
+	Username string `json:"username"`
+}
 
 func Hook(conf *config.Model) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {

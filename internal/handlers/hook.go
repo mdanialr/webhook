@@ -29,7 +29,7 @@ func Hook(conf *config.Model) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		repo := c.Params("repo")
 
-		var reqHook models.Request
+		var reqHook request
 		if err := c.BodyParser(&reqHook); err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return c.JSON(fiber.Map{

@@ -2,64 +2,65 @@ package handlers
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/mdanialr/webhook/internal/config"
-	"github.com/mdanialr/webhook/internal/helpers"
 	"github.com/mdanialr/webhook/internal/models"
+	"strings"
 )
 
-func Hook(c *fiber.Ctx) error {
-	// check if there is new config value by checking the new hash
-	// file value against old hash.
-	if err := helpers.ReloadConfig(config.Conf); err != nil {
-		helpers.NzLogErr.Println("failed trying to reload and repopulate config file:", err)
-	}
+func Hook(conf *config.Model) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		repo := c.Params("repo")
 
-	repo := c.Params("repo")
+		var reqHook models.Request
+		if err := c.BodyParser(&reqHook); err != nil {
+			c.Status(fiber.StatusBadRequest)
+			return c.JSON(fiber.Map{
+				"message": fmt.Sprintf("failed parsing request body: %v", err),
+			})
+		}
 
-	reqHook := new(models.Request)
-	if err := c.BodyParser(reqHook); err != nil {
-		return fmt.Errorf("failed parsing request body: %v", err)
-	}
+		confKeyword := conf.Keyword
+		confUsr := conf.Usr
 
-	confMsgKey := config.Conf.Keyword
-	confUsrKey := config.Conf.Usr
+		remoteUsr := reqHook.Commits[0].Committer.Username
+		message := reqHook.Commits[0].Message
+		branch := strings.Split(reqHook.Branch, "/")
+		branchName := strings.Join(branch[len(branch)-1:], "")
 
-	remoteUsr := reqHook.Commits[0].Committer.Username
-	message := reqHook.Commits[0].Message
-	branch := strings.Split(reqHook.Branch, "/")
-	branchName := strings.Join(branch[len(branch)-1:], "")
+		// 1# Validate config's username against incoming committer.
+		// 2# Validate config's keyword against incoming message's prefix.
+		// 3# If both config's username or keyword is 'empty' no need to
+		// validate username.
 
-	var isReload bool
-	// Validate config's username against incoming committer, only if config's username
-	// is not 'empty' or using wildcard '*'.
-	if confUsrKey != "empty" && confUsrKey != "*" && confUsrKey != remoteUsr {
-		isReload = false
-	}
-	// Otherwise, no need to validate username.
-	if confUsrKey == "empty" || confUsrKey == "*" {
-		isReload = true
-	}
-
-	// Validate config's message against incoming committer message.
-	switch confMsgKey {
-	case "empty":
-		isReload = true
-	default:
-		isReload = strings.HasPrefix(message, confMsgKey)
-	}
+		var isReload bool
+		switch {
+		case confUsr == remoteUsr && confKeyword == "empty":
+			isReload = true
+		case confUsr == "empty" && strings.HasPrefix(message, confKeyword):
+			isReload = true
+		case confUsr == "empty" && confKeyword == "empty":
+			isReload = true
+		case confUsr == remoteUsr && strings.HasPrefix(message, confKeyword):
+			isReload = true
+		case confUsr != remoteUsr && confKeyword == "empty":
+			isReload = false
+		case confUsr == remoteUsr && !strings.HasPrefix(message, confKeyword):
+			isReload = false
+		case confUsr == "empty" && !strings.HasPrefix(message, confKeyword):
+			isReload = false
+		}
 
 	if isReload {
 		helpers.WorkerChan <- repo
 	}
 
-	return c.JSON(fiber.Map{
-		"committer": remoteUsr,
-		"message":   message,
-		"branch":    branchName,
-		"reload":    isReload,
-		"repo":      repo,
-	})
+		return c.JSON(fiber.Map{
+			"committer": remoteUsr,
+			"message":   message,
+			"branch":    branchName,
+			"reload":    isReload,
+			"repo":      repo,
+		})
+	}
 }

@@ -9,16 +9,16 @@ import (
 	"github.com/mdanialr/webhook/internal/middlewares"
 )
 
-func SetupRoutes(app *fiber.App) {
+func SetupRoutes(app *fiber.App, conf *config.Model) {
 	// Built-in fiber middlewares
 	app.Use(recover.New())
 	// Use log file only in production
-	switch config.Conf.EnvIsProd {
+	switch conf.EnvIsProd {
 	case true:
 		fConf := logger.Config{
 			Format:     "[${time}] ${status} | ${method} - ${latency} - ${ip} | ${path}\n",
 			TimeFormat: "02-Jan-2006 15:04:05",
-			Output:     config.Conf.LogFile,
+			Output:     conf.LogFile,
 		}
 		app.Use(logger.New(fConf))
 	case false:
@@ -28,8 +28,8 @@ func SetupRoutes(app *fiber.App) {
 	// This app's endpoints
 	app.Get("/", handlers.Home)
 	app.Post("/hook/:repo",
-		middlewares.SecretToken,
-		handlers.Hook,
+		middlewares.SecretToken(conf),
+		handlers.Hook(conf),
 	)
 
 	// Custom middlewares AFTER endpoints

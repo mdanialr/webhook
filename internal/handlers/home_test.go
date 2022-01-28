@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -13,11 +12,13 @@ func TestHome(t *testing.T) {
 	testCases := []struct {
 		name         string
 		route        string
+		method       string
 		expectedCode int
 	}{
 		{
 			name:         "GET / : Home handler should return 200",
 			route:        "/",
+			method:       fiber.MethodGet,
 			expectedCode: 200,
 		},
 	}
@@ -27,7 +28,7 @@ func TestHome(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodGet, tt.route, nil)
+			req := httptest.NewRequest(tt.method, tt.route, nil)
 
 			res, _ := app.Test(req)
 

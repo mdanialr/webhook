@@ -13,18 +13,21 @@ func TestDefaultError(t *testing.T) {
 	testCases := []struct {
 		name         string
 		route        string
+		method       string
 		expectedCode int
 		expectedMIME string
 	}{
 		{
 			name:         "GET /err : internal server error should return 500 in JSON response",
 			route:        "/err",
+			method:       fiber.MethodGet,
 			expectedCode: 500,
 			expectedMIME: fiber.MIMEApplicationJSON,
 		},
 		{
 			name:         "GET /error : internal server error should return 500 in JSON response",
 			route:        "/error",
+			method:       fiber.MethodGet,
 			expectedCode: 500,
 			expectedMIME: fiber.MIMEApplicationJSON,
 		},
@@ -41,7 +44,7 @@ func TestDefaultError(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(fiber.MethodGet, tt.route, nil)
+			req := httptest.NewRequest(tt.method, tt.route, nil)
 
 			res, _ := app.Test(req)
 

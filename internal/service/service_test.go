@@ -85,7 +85,6 @@ func TestModel_LookupRepo(t *testing.T) {
 				assert.Equal(t, tt.expected, m)
 			case true:
 				require.Error(t, err)
-				assert.Equal(t, ErrRepoNotFound, err)
 				assert.NotEqual(t, tt.expected, m)
 			}
 		})

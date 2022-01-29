@@ -1,12 +1,10 @@
 package service
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/mdanialr/webhook/internal/repo"
 )
-
-var ErrRepoNotFound = errors.New("repo not found in service")
 
 // Model holds list of data for all repos.
 type Model []struct {
@@ -23,5 +21,5 @@ func (m *Model) LookupRepo(name string) (repo.Model, error) {
 		}
 	}
 
-	return repo.Model{}, ErrRepoNotFound
+	return repo.Model{}, fmt.Errorf("repo not found")
 }

@@ -1,55 +1,67 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mdanialr/webhook/internal/config"
 	"github.com/mdanialr/webhook/internal/handlers"
-	"github.com/mdanialr/webhook/internal/helpers"
+	"github.com/mdanialr/webhook/internal/logger"
 	"github.com/mdanialr/webhook/internal/routes"
 )
 
 var configFilePath = "config.yaml"
 
 func main() {
-	appConfig := config.Conf
-	var proxyHeader string
-	switch appConfig.EnvIsProd {
-	case true:
-		proxyHeader = "X-Real-Ip"
-	case false:
-		proxyHeader = ""
+	f, err := os.ReadFile(configFilePath)
+	if err != nil {
+		log.Fatalln("failed to read config file:", err)
 	}
+
+	var appConfig config.Model
+	app, err := setup(&appConfig, bytes.NewReader(f))
+	if err != nil {
+		log.Fatalln("failed setup the app:", err)
+	}
+
+	routes.SetupRoutes(app, &appConfig, logger.InfL)
+
+	logger.InfL.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)
+	logger.ErrL.Fatalln(app.Listen(fmt.Sprintf("%s:%v", appConfig.Host, appConfig.PortNum)))
+}
+
+// setup prepare everything that necessary before starting this app.
+func setup(conf *config.Model, fBuf io.Reader) (*fiber.App, error) {
+	// init and load the config file.
+	conf, err := config.NewConfig(fBuf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config file: %v\n", err)
+	}
+	if err := conf.Sanitization(); err != nil {
+		return nil, fmt.Errorf("failed sanitizing config: %v\n", err)
+	}
+	conf.SanitizationLog()
+
+	// Init internal logging.
+	if err := logger.InitLogger(conf); err != nil {
+		return nil, fmt.Errorf("failed to init internal logging: %v\n", err)
+	}
+
+	// if app in production use hostname from Nginx instead.
+	var proxyHeader string
+	if conf.EnvIsProd {
+		proxyHeader = "X-Real-Ip"
+	}
+
 	app := fiber.New(fiber.Config{
-		DisableStartupMessage: appConfig.EnvIsProd,
+		DisableStartupMessage: conf.EnvIsProd,
 		ErrorHandler:          handlers.DefaultError,
 		ProxyHeader:           proxyHeader,
 	})
 
-	routes.SetupRoutes(app)
-
-	helpers.NzLogInf.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)
-	helpers.NzLogErr.Fatalln(app.Listen(fmt.Sprintf("%s:%v", appConfig.Host, appConfig.PortNum)))
-}
-
-func init() {
-	// First thing first, init and load the config file
-	if err := config.Conf.LoadConfigFromFile(configFilePath); err != nil {
-		log.Fatalln("failed to load config file:", err)
-	}
-	// Init internal logging
-	if err := helpers.InitNzLog(config.Conf); err != nil {
-		log.Fatalln("failed to init internal logging:", err)
-	}
-
-	WorkerChan := make(chan string)
-	// Assign the chan to global var in helpers, so it can be accessed by handlers
-	// to send the job later
-	helpers.WorkerChan = WorkerChan
-	// Spawn workers as many as on max worker in config
-	for w := 1; w <= config.Conf.MaxWorker; w++ {
-		go helpers.CDWorker(WorkerChan)
-	}
+	return app, nil
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mdanialr/webhook/internal/config"
+	"github.com/mdanialr/webhook/internal/worker"
 )
 
 // request hold the most outer scope of incoming JSON from GitHub Webhook
@@ -68,9 +69,9 @@ func Hook(conf *config.Model) func(*fiber.Ctx) error {
 			isReload = false
 		}
 
-	if isReload {
-		helpers.WorkerChan <- repo
-	}
+		if isReload {
+			worker.Chan.JobC <- repo
+		}
 
 		return c.JSON(fiber.Map{
 			"committer": remoteUsr,

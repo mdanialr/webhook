@@ -56,6 +56,8 @@ var sampleRequestBody = []string{
 `,
 }
 
+var fakeChan = make(chan string)
+
 type responseJSON struct {
 	Committer string `json:"committer"`
 	Message   string `json:"message"`
@@ -107,7 +109,7 @@ func TestHook_SimpleTest(t *testing.T) {
 	require.NoError(t, err)
 
 	app := fiber.New()
-	app.Post("/hook/:repo", Hook(mod))
+	app.Post("/hook/:repo", Hook(mod, fakeChan))
 
 	for i, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -143,7 +145,7 @@ func TestHook_TriggerErrorTest(t *testing.T) {
 	require.NoError(t, err)
 
 	app := fiber.New()
-	app.Post("/hook/:repo", Hook(mod))
+	app.Post("/hook/:repo", Hook(mod, fakeChan))
 
 	const route = "/hook/:x-repo"
 	const expectedStatusCode = fiber.StatusBadRequest
@@ -298,7 +300,7 @@ func TestHook_UsingBodyRequest(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			app := fiber.New()
-			app.Post("/hook/:repo", Hook(&tt.configSample))
+			app.Post("/hook/:repo", Hook(&tt.configSample, fakeChan))
 
 			// Validate config to fill in required username and keyword
 			require.NoError(t, tt.configSample.Sanitization())

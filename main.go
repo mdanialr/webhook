@@ -39,6 +39,8 @@ func main() {
 	for w := 1; w <= appConfig.MaxWorker; w++ {
 		go worker.JobCD(ch, &appConfig)
 	}
+	// spawn worker to write internal logger from Hook Handler
+	go logWriterFromChannel(ch)
 
 	// init custom app logger
 	appConfig.LogFile, err = os.OpenFile(appConfig.LogDir+"log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
@@ -82,4 +84,19 @@ func setup(conf *config.Model, fBuf io.Reader) (*fiber.App, error) {
 	})
 
 	return app, nil
+}
+
+// logWriterFromChannel listen to channels and write every message
+// to internal logger.
+func logWriterFromChannel(ch *worker.Channel) {
+	go func() {
+		for inf := range ch.InfC {
+			logger.InfL.Printf(inf)
+		}
+	}()
+	go func() {
+		for err := range ch.ErrC {
+			logger.ErrL.Printf(err)
+		}
+	}()
 }

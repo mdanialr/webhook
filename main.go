@@ -30,14 +30,14 @@ func main() {
 	}
 
 	// init worker channels
-	worker.Chan = &worker.Channel{
+	ch := &worker.Channel{
 		JobC: make(chan string, 10),
 		InfC: make(chan string, 10),
 		ErrC: make(chan string, 10),
 	}
 	// spawn worker pool with max number based on config's max worker
 	for w := 1; w <= appConfig.MaxWorker; w++ {
-		go worker.JobCD(worker.Chan, &appConfig)
+		go worker.JobCD(ch, &appConfig)
 	}
 
 	routes.SetupRoutes(app, &appConfig, logger.InfL, ch.JobC)

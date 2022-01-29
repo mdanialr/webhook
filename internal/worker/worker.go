@@ -14,8 +14,6 @@ type Channel struct {
 	ErrC chan string // send any error information
 }
 
-var Chan *Channel
-
 // JobCD worker that would always listen to job channel and do
 // continuous delivery based on the repo's name.
 func JobCD(ch *Channel, m *config.Model) {

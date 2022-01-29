@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/mdanialr/webhook/internal/worker"
 	"io"
 	"log"
 	"os"
@@ -26,6 +27,17 @@ func main() {
 	app, err := setup(&appConfig, bytes.NewReader(f))
 	if err != nil {
 		log.Fatalln("failed setup the app:", err)
+	}
+
+	// init worker channels
+	worker.Chan = &worker.Channel{
+		JobC: make(chan string, 10),
+		InfC: make(chan string, 10),
+		ErrC: make(chan string, 10),
+	}
+	// spawn worker pool with max number based on config's max worker
+	for w := 1; w <= appConfig.MaxWorker; w++ {
+		go worker.JobCD(worker.Chan, &appConfig)
 	}
 
 	routes.SetupRoutes(app, &appConfig, logger.InfL)

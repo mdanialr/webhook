@@ -40,6 +40,12 @@ func main() {
 		go worker.JobCD(ch, &appConfig)
 	}
 
+	// init custom app logger
+	appConfig.LogFile, err = os.OpenFile(appConfig.LogDir+"log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
+	if err != nil {
+		log.Fatalln("failed to open|create log file:", err)
+	}
+
 	routes.SetupRoutes(app, &appConfig, logger.InfL, ch.JobC)
 
 	logger.InfL.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)

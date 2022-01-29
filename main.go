@@ -40,7 +40,7 @@ func main() {
 		go worker.JobCD(worker.Chan, &appConfig)
 	}
 
-	routes.SetupRoutes(app, &appConfig, logger.InfL)
+	routes.SetupRoutes(app, &appConfig, logger.InfL, ch.JobC)
 
 	logger.InfL.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)
 	logger.ErrL.Fatalln(app.Listen(fmt.Sprintf("%s:%v", appConfig.Host, appConfig.PortNum)))

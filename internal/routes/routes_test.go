@@ -16,13 +16,13 @@ func TestSetupRoutes(t *testing.T) {
 		conf := config.Model{Secret: "1"}
 		app := fiber.New()
 
-		SetupRoutes(app, &conf, &fakeLogger{})
+		SetupRoutes(app, &conf, &fakeLogger{}, make(chan string))
 	})
 
 	t.Run("2# Success test", func(t *testing.T) {
 		conf := config.Model{Secret: "1", EnvIsProd: true}
 		app := fiber.New()
 
-		SetupRoutes(app, &conf, &fakeLogger{})
+		SetupRoutes(app, &conf, &fakeLogger{}, make(chan string))
 	})
 }

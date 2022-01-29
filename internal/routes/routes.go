@@ -10,7 +10,7 @@ import (
 	"github.com/mdanialr/webhook/internal/middlewares"
 )
 
-func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface) {
+func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, jobC chan string) {
 	// Built-in fiber middlewares
 	app.Use(recover.New())
 	// Use log file only in production
@@ -31,7 +31,7 @@ func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface) {
 	app.Post("/hook/:repo",
 		middlewares.ReloadConfig(conf, l),
 		middlewares.SecretToken(conf),
-		handlers.Hook(conf),
+		handlers.Hook(conf, jobC),
 	)
 
 	// Custom middlewares AFTER endpoints

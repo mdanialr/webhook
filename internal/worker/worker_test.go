@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"os/exec"
 	"testing"
@@ -9,6 +8,7 @@ import (
 	"github.com/mdanialr/webhook/internal/config"
 	"github.com/mdanialr/webhook/internal/repo"
 	"github.com/mdanialr/webhook/internal/service"
+	"github.com/stretchr/testify/assert"
 )
 
 type fakeWriter struct{}

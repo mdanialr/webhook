@@ -2,9 +2,12 @@ package worker
 
 import (
 	"fmt"
+	"os/exec"
 
 	"github.com/mdanialr/webhook/internal/config"
 )
+
+var execCmd = exec.Command
 
 // Channel used by worker to exchange messages, either receive job
 // or send any information.
@@ -27,15 +30,15 @@ func JobCD(ch *Channel, m *config.Model) {
 		}
 
 		// setup and prepare command
-		_ = r.ParsePullCommand()
+		cmd := r.ParsePullCommand()
 
-		// TODO: implement interface for executing cmd
-		//res, err := exec.Command("sh", "-c", cmd).CombinedOutput()
-		//if err != nil {
-		//	ch.ErrC <- fmt.Sprintf("failed to execute git pull from remote repo: %v\n", err)
-		//}
+		// execute the command
+		res, err := execCmd("sh", "-c", cmd).CombinedOutput()
+		if err != nil {
+			ch.ErrC <- fmt.Sprintf("failed to execute git pull from remote repo: %v\n", err)
+		}
 
-		//ch.InfC <- string(res)
+		ch.InfC <- string(res)
 		ch.InfC <- fmt.Sprintf("DONE working on: %v\n", job)
 	}
 }

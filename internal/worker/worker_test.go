@@ -2,12 +2,27 @@ package worker
 
 import (
 	"github.com/stretchr/testify/assert"
+	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/mdanialr/webhook/internal/config"
 	"github.com/mdanialr/webhook/internal/repo"
 	"github.com/mdanialr/webhook/internal/service"
 )
+
+type fakeWriter struct{}
+
+func (_ fakeWriter) Write(_ []byte) (_ int, _ error) { return }
+
+func fakeExecCommand(command string, args ...string) *exec.Cmd {
+	cs := []string{"-test.run=TestHelperProcess", "--", command}
+	cs = append(cs, args...)
+	cmd := exec.Command(os.Args[0], cs...)
+	cmd.Stdout = fakeWriter{}
+	cmd.Env = []string{"GO_WANT_HELPER_PROCESS=1"}
+	return cmd
+}
 
 func TestJobCD(t *testing.T) {
 	serviceSample := service.Model{
@@ -65,6 +80,9 @@ func TestJobCD(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
+			execCmd = fakeExecCommand
+			defer func() { execCmd = exec.Command }()
+
 			var gotErr uint8
 			ch.JobC <- tt.job
 

@@ -3,10 +3,12 @@ package main
 import (
 	"bytes"
 	"errors"
-	"github.com/mdanialr/webhook/internal/config"
 	"os"
+	"strconv"
 	"testing"
 
+	"github.com/mdanialr/webhook/internal/config"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,9 +22,9 @@ func TestSetup(t *testing.T) {
 	fakeConfigFile :=
 		`
 env: prod
-port: 5050
+port: 5454
 secret: secret
-log: /var/log/webhook/log
+log: /home/nzk/test-app/webhook/log
 service:
   - repo:
       name: fiber-ln
@@ -34,11 +36,6 @@ service:
       opt_cmd: pwd
 `
 	var appConf config.Model
-
-	t.Run("Log dir does not exist should return error", func(t *testing.T) {
-		_, err := setup(&appConf, bytes.NewBufferString(fakeConfigFile))
-		require.Error(t, err)
-	})
 
 	t.Run("Using fake interface should return error", func(t *testing.T) {
 		_, err := setup(&appConf, fakeReader{})

@@ -57,10 +57,11 @@ func main() {
 // setup prepare everything that necessary before starting this app.
 func setup(conf *config.Model, fBuf io.Reader) (*fiber.App, error) {
 	// init and load the config file.
-	conf, err := config.NewConfig(fBuf)
+	newConf, err := config.NewConfig(fBuf)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config file: %v\n", err)
 	}
+	*conf = *newConf
 	if err := conf.Sanitization(); err != nil {
 		return nil, fmt.Errorf("failed sanitizing config: %v\n", err)
 	}

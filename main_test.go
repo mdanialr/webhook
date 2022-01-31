@@ -43,7 +43,7 @@ service:
 	})
 
 	t.Run("Success using real config file", func(t *testing.T) {
-		f, err := os.ReadFile(configFilePath)
+		f, err := os.ReadFile("config.yaml")
 		require.NoError(t, err)
 
 		_, err = setup(&appConf, bytes.NewReader(f))

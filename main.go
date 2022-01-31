@@ -15,10 +15,8 @@ import (
 	"github.com/mdanialr/webhook/internal/worker"
 )
 
-var configFilePath = "config.yaml"
-
 func main() {
-	f, err := os.ReadFile(configFilePath)
+	f, err := os.ReadFile("config.yaml")
 	if err != nil {
 		log.Fatalln("failed to read config file:", err)
 	}

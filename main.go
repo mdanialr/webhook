@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/mdanialr/webhook/internal/worker"
 	"io"
 	"log"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"github.com/mdanialr/webhook/internal/handlers"
 	"github.com/mdanialr/webhook/internal/logger"
 	"github.com/mdanialr/webhook/internal/routes"
+	"github.com/mdanialr/webhook/internal/worker"
 )
 
 var configFilePath = "config.yaml"

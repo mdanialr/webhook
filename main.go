@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	f, err := os.ReadFile("config.yaml")
+	f, err := os.ReadFile("app-config.yaml")
 	if err != nil {
 		log.Fatalln("failed to read config file:", err)
 	}

@@ -3,4 +3,4 @@
 logs/
 tmp/
 bin/
-config.yaml
+app-config.yaml

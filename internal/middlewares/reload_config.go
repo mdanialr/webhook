@@ -9,7 +9,7 @@ import (
 	"github.com/mdanialr/webhook/internal/logger"
 )
 
-var configFilePath = "config.yaml"
+var configFilePath = "app-config.yaml"
 
 // ReloadConfig reload config instance at every call.
 func ReloadConfig(conf config.Interface, l logger.Interface) func(*fiber.Ctx) error {

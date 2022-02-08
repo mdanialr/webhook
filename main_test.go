@@ -23,7 +23,7 @@ func TestSetup(t *testing.T) {
 env: prod
 port: 5454
 secret: secret
-log: /home/nzk/test-app/webhook/log
+log: /tmp
 service:
   - repo:
       name: fiber-ln
@@ -47,7 +47,7 @@ service:
 
 		assert.Equal(t, "localhost", appConf.Host)
 		assert.Equal(t, strconv.Itoa(int(uint16(5454))), strconv.Itoa(int(appConf.PortNum)))
-		assert.Equal(t, "/home/nzk/test-app/webhook/log/", appConf.LogDir)
+		assert.Equal(t, "/tmp/", appConf.LogDir)
 	})
 
 	fakeConfigFile =

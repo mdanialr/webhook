@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"errors"
-	"os"
 	"strconv"
 	"testing"
 
@@ -40,14 +39,6 @@ service:
 	t.Run("Using fake interface should return error", func(t *testing.T) {
 		_, err := setup(&appConf, fakeReader{})
 		require.Error(t, err)
-	})
-
-	t.Run("Success using real config file", func(t *testing.T) {
-		f, err := os.ReadFile("app-config.yaml")
-		require.NoError(t, err)
-
-		_, err = setup(&appConf, bytes.NewReader(f))
-		require.NoError(t, err)
 	})
 
 	t.Run("Success must exactly the same as in config file", func(t *testing.T) {

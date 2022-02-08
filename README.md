@@ -9,14 +9,14 @@ go mod tidy
 ```
 3. Create new config file.
 ```
-cp config.yaml.example config.yaml
+cp app-config.yaml.example app-config.yaml
 ```
-4. Fill in the config.yaml file as needed.
+4. Fill in the app-config.yaml file as needed.
 5. Build the project.
 ```
 go build -o bin/webhook main.go
 ```
-or
+or use makefile instead
 ```
 make
 ```

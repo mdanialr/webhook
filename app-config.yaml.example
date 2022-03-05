@@ -15,3 +15,16 @@ service:
       name: #required. the name of the repo should be match as in the url '/hook/{repo}'
       root: #required. where git pull should be executed
       opt_cmd: #optional. shell command that get executed after git pull
+dockers:
+  - docker:
+      user: #required. the user that own the repo
+      pass: #require. the password for this user
+      repo: #require. the repo which would be listened
+      tag: #optional. the tag that associated with this repo. default to 'latest'
+      args: #optional. arguments that would be added when running docker command 'docker run ... '. example: -p 4000:4000
+  - docker:
+      user: #required. the user that own the repo
+      pass: #require. the password for this user
+      repo: #require. the repo which would be listened
+      tag: #optional. the tag that associated with this repo. default to 'latest'
+      args: #optional. arguments that would be added when running docker command 'docker run ... '. example: -p 5000:6000

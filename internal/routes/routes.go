@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -10,7 +12,7 @@ import (
 	"github.com/mdanialr/webhook/internal/middlewares"
 )
 
-func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, jobC chan string) {
+func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, jobC chan string, hCl *http.Client) {
 	// Built-in fiber middlewares
 	app.Use(recover.New())
 	// Use log file only in production
@@ -32,6 +34,10 @@ func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, jobC cha
 		middlewares.ReloadConfig(conf, l),
 		middlewares.SecretToken(conf),
 		handlers.Hook(conf, jobC),
+	)
+	app.Post("/docker/webhook",
+		middlewares.ReloadConfig(conf, l),
+		handlers.DockerHubWebhook(jobC, hCl),
 	)
 
 	// Custom middlewares AFTER endpoints

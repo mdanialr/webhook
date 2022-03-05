@@ -1,12 +1,8 @@
-name: Webhhok Release Builder
-
-on:
-  push:
-    tags:
-      - v*
+on: workflow_call
 
 jobs:
   release:
+    name: Compile and Release Binary
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

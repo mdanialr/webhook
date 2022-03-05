@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mdanialr/webhook/internal/docker"
 	"github.com/mdanialr/webhook/internal/service"
 	"gopkg.in/yaml.v3"
 )
@@ -34,6 +35,7 @@ type Model struct {
 	LogDir    string        `yaml:"log"`
 	MaxWorker int           `yaml:"max_worker"`
 	Service   service.Model `yaml:"service"`
+	Dockers   docker.Docker `yaml:"dockers"`
 	LogFile   *os.File
 }
 

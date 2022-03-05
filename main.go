@@ -68,10 +68,13 @@ func setup(conf *config.Model, fBuf io.Reader) (*fiber.App, error) {
 		return nil, fmt.Errorf("failed to load config file: %v\n", err)
 	}
 	*conf = *newConf
-	if err := conf.Sanitization(); err != nil {
+	if err = conf.Sanitization(); err != nil {
 		return nil, fmt.Errorf("failed sanitizing config: %v\n", err)
 	}
 	conf.SanitizationLog()
+	if err = conf.Dockers.Sanitization(); err != nil {
+		return nil, fmt.Errorf("failed sanitizing docker config: %s\n", err)
+	}
 
 	// Init internal logging.
 	if err := logger.InitLogger(conf); err != nil {

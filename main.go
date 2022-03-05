@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -27,8 +28,13 @@ func main() {
 		log.Fatalln("failed setup the app:", err)
 	}
 
-	// init worker channels
+	// init worker channels and docker worker channel
 	ch := &worker.Channel{
+		JobC: make(chan string, 10),
+		InfC: make(chan string, 10),
+		ErrC: make(chan string, 10),
+	}
+	dCh := &worker.DockerChannel{
 		JobC: make(chan string, 10),
 		InfC: make(chan string, 10),
 		ErrC: make(chan string, 10),
@@ -36,9 +42,10 @@ func main() {
 	// spawn worker pool with max number based on config's max worker
 	for w := 1; w <= appConfig.MaxWorker; w++ {
 		go worker.JobCD(ch, &appConfig)
+		go worker.DockerCDWorker(dCh, &appConfig)
 	}
 	// spawn worker to write internal logger from Hook Handler
-	go logWriterFromChannel(ch)
+	go logWriterFromChannel(ch, dCh)
 
 	// init custom app logger
 	appConfig.LogFile, err = os.OpenFile(appConfig.LogDir+"log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
@@ -46,7 +53,8 @@ func main() {
 		log.Fatalln("failed to open|create log file:", err)
 	}
 
-	routes.SetupRoutes(app, &appConfig, logger.InfL, ch.JobC)
+	cl := &http.Client{}
+	routes.SetupRoutes(app, &appConfig, logger.InfL, ch.JobC, cl)
 
 	logger.InfL.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)
 	logger.ErrL.Fatalln(app.Listen(fmt.Sprintf("%s:%v", appConfig.Host, appConfig.PortNum)))
@@ -87,15 +95,21 @@ func setup(conf *config.Model, fBuf io.Reader) (*fiber.App, error) {
 
 // logWriterFromChannel listen to channels and write every message
 // to internal logger.
-func logWriterFromChannel(ch *worker.Channel) {
+func logWriterFromChannel(ch *worker.Channel, dCh *worker.DockerChannel) {
 	go func() {
 		for inf := range ch.InfC {
+			logger.InfL.Printf(inf)
+		}
+		for inf := range dCh.InfC {
 			logger.InfL.Printf(inf)
 		}
 	}()
 	go func() {
 		for err := range ch.ErrC {
 			logger.ErrL.Printf(err)
+		}
+		for err := range dCh.ErrC {
+			logger.InfL.Printf(err)
 		}
 	}()
 }

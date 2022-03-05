@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/mdanialr/webhook/internal/config"
+	"github.com/mdanialr/webhook/internal/worker"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -73,4 +74,19 @@ log: /fake/dir
 		_, err := setup(&appConf, bytes.NewBufferString(fakeConfigFile))
 		require.Error(t, err)
 	})
+}
+
+func TestLogWriterFromChannels(t *testing.T) {
+	ch := &worker.Channel{
+		JobC: make(chan string, 10),
+		InfC: make(chan string, 10),
+		ErrC: make(chan string, 10),
+	}
+	dCh := &worker.DockerChannel{
+		JobC: make(chan string, 10),
+		InfC: make(chan string, 10),
+		ErrC: make(chan string, 10),
+	}
+
+	logWriterFromChannel(ch, dCh)
 }

@@ -54,7 +54,7 @@ func main() {
 	}
 
 	cl := &http.Client{}
-	routes.SetupRoutes(app, &appConfig, logger.InfL, ch.JobC, cl)
+	routes.SetupRoutes(app, &appConfig, logger.InfL, ch.JobC, dCh.JobC, cl)
 
 	logger.InfL.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)
 	logger.ErrL.Fatalln(app.Listen(fmt.Sprintf("%s:%v", appConfig.Host, appConfig.PortNum)))
@@ -103,14 +103,18 @@ func logWriterFromChannel(ch *worker.Channel, dCh *worker.DockerChannel) {
 		for inf := range ch.InfC {
 			logger.InfL.Printf(inf)
 		}
-		for inf := range dCh.InfC {
-			logger.InfL.Printf(inf)
-		}
 	}()
 	go func() {
 		for err := range ch.ErrC {
 			logger.ErrL.Printf(err)
 		}
+	}()
+	go func() {
+		for inf := range dCh.InfC {
+			logger.InfL.Printf(inf)
+		}
+	}()
+	go func() {
 		for err := range dCh.ErrC {
 			logger.InfL.Printf(err)
 		}

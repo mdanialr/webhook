@@ -13,3 +13,7 @@ jobs:
     name: Build and Release Binary
     needs: ci
     uses: ./.github/workflows/release.yml
+  webhook:
+    name: Invoke Webhook
+    needs: ci
+    uses: ./.github/workflows/webhook.yml

@@ -20,10 +20,11 @@ func DockerCDWorker(ch *DockerChannel, conf *config.Model) {
 	for job := range ch.JobC {
 		ch.InfC <- fmt.Sprintf("START working on: %v\n", job)
 
-		// make sure repo exist
+		// make sure docker's id exist
 		dock, err := conf.Dockers.LookupRepo(job)
 		if err != nil {
 			ch.ErrC <- err.Error()
+			return
 		}
 
 		// setup and prepare command
@@ -32,7 +33,8 @@ func DockerCDWorker(ch *DockerChannel, conf *config.Model) {
 		// execute the command
 		res, err := execCmd("sh", "-c", cmd).CombinedOutput()
 		if err != nil {
-			ch.ErrC <- fmt.Sprintf("failed to execute git pull from remote repo: %v\n", err)
+			ch.ErrC <- fmt.Sprintf("failed to execute docker pull commands: %v\n", err)
+			return
 		}
 
 		ch.InfC <- string(res)

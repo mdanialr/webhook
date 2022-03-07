@@ -116,7 +116,7 @@ func logWriterFromChannel(ch *worker.Channel, dCh *worker.DockerChannel) {
 	}()
 	go func() {
 		for err := range dCh.ErrC {
-			logger.InfL.Printf(err)
+			logger.ErrL.Printf(err)
 		}
 	}()
 }

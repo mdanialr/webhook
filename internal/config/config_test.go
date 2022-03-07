@@ -34,8 +34,6 @@ log: /home/nzk/test-app/webhook/log
 		assert.Equal(t, "", mod.Host)
 		assert.Equal(t, uint16(5005), mod.PortNum)
 		assert.Equal(t, "mM0B9VclhC2tH51RKUonN2NlQOPOp5RpqroyrO7n68hnVSvli8", mod.Secret)
-		assert.Equal(t, "", mod.Keyword)
-		assert.Equal(t, "", mod.Usr)
 		assert.Equal(t, "/home/nzk/test-app/webhook/log", mod.LogDir)
 	})
 
@@ -318,70 +316,6 @@ func TestSanitization_Port(t *testing.T) {
 			err := tt.sample.Sanitization()
 			require.NoError(t, err)
 			assert.Equal(t, tt.expect, tt.sample.PortNum)
-		})
-	}
-}
-
-func TestSanitization_Keyword(t *testing.T) {
-	testCases := []struct {
-		name   string
-		sample Model
-		expect string
-	}{
-		{
-			name:   "Keyword w ':' should be ':'",
-			sample: Model{Keyword: ":", Secret: "lol"},
-			expect: ":",
-		},
-		{
-			name:   "Keyword w '`' should be '`'",
-			sample: Model{Keyword: "`", Secret: "lol"},
-			expect: "`",
-		},
-		{
-			name:   "Keyword w/o value should be 'empty'",
-			sample: Model{Secret: "lol"},
-			expect: "empty",
-		},
-	}
-
-	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.sample.Sanitization()
-			require.NoError(t, err)
-			assert.Equal(t, tt.expect, tt.sample.Keyword)
-		})
-	}
-}
-
-func TestSanitization_User(t *testing.T) {
-	testCases := []struct {
-		name   string
-		sample Model
-		expect string
-	}{
-		{
-			name:   "User w 'nzk' should be 'nzk'",
-			sample: Model{Usr: "nzk", Secret: "lol"},
-			expect: "nzk",
-		},
-		{
-			name:   "User w 'xxx' should be 'xxx'",
-			sample: Model{Usr: "xxx", Secret: "lol"},
-			expect: "xxx",
-		},
-		{
-			name:   "User w/o value should be 'empty'",
-			sample: Model{Secret: "lol"},
-			expect: "empty",
-		},
-	}
-
-	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.sample.Sanitization()
-			require.NoError(t, err)
-			assert.Equal(t, tt.expect, tt.sample.Usr)
 		})
 	}
 }

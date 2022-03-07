@@ -30,8 +30,6 @@ type Model struct {
 	Host      string          `yaml:"host"`
 	PortNum   uint16          `yaml:"port"`
 	Secret    string          `yaml:"secret"`
-	Keyword   string          `yaml:"keyword"`
-	Usr       string          `yaml:"username"`
 	LogDir    string          `yaml:"log"`
 	MaxWorker int             `yaml:"max_worker"`
 	Service   service.Service `yaml:"service"`
@@ -96,14 +94,6 @@ func (m *Model) Sanitization() error {
 
 	if m.PortNum == 0 {
 		m.PortNum = 5050
-	}
-
-	if m.Keyword == "" {
-		m.Keyword = "empty"
-	}
-
-	if m.Usr == "" {
-		m.Usr = "empty"
 	}
 
 	if m.MaxWorker <= 0 {

@@ -26,16 +26,16 @@ type Interface interface {
 // Model holds data from config file.
 type Model struct {
 	EnvIsProd bool
-	Env       string        `yaml:"env"`
-	Host      string        `yaml:"host"`
-	PortNum   uint16        `yaml:"port"`
-	Secret    string        `yaml:"secret"`
-	Keyword   string        `yaml:"keyword"`
-	Usr       string        `yaml:"username"`
-	LogDir    string        `yaml:"log"`
-	MaxWorker int           `yaml:"max_worker"`
-	Service   service.Model `yaml:"service"`
-	Dockers   docker.Docker `yaml:"dockers"`
+	Env       string          `yaml:"env"`
+	Host      string          `yaml:"host"`
+	PortNum   uint16          `yaml:"port"`
+	Secret    string          `yaml:"secret"`
+	Keyword   string          `yaml:"keyword"`
+	Usr       string          `yaml:"username"`
+	LogDir    string          `yaml:"log"`
+	MaxWorker int             `yaml:"max_worker"`
+	Service   service.Service `yaml:"service"`
+	Dockers   docker.Docker   `yaml:"dockers"`
 	LogFile   *os.File
 }
 

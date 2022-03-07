@@ -10,22 +10,31 @@ import (
 func TestDocker_LookupRepoUsingModel(t *testing.T) {
 	dockerSamples := Docker{
 		{Model{
-			Id:   "nzk_repo_latest",
-			User: "nzk",
-			Pass: "pass",
-			Repo: "repo",
+			Id:    "nzk_repo_latest",
+			User:  "nzk",
+			Pass:  "pass",
+			Repo:  "repo",
+			Tag:   "latest",
+			Image: "nzk/repo:latest",
+			Name:  "repo_latest",
 		}},
 		{Model{
-			Id:   "user_repo-one_latest",
-			User: "user",
-			Pass: "sec",
-			Repo: "repo-one",
+			Id:    "user_repo-one_latest",
+			User:  "user",
+			Pass:  "sec",
+			Repo:  "repo-one",
+			Tag:   "latest",
+			Image: "user/repo-one:latest",
+			Name:  "repo-one_latest",
 		}},
 		{Model{
-			Id:   "nzk_repo-me_latest",
-			User: "nzk",
-			Pass: "pass-me",
-			Repo: "repo-me",
+			Id:    "nzk_repo-me_latest",
+			User:  "nzk",
+			Pass:  "pass-me",
+			Repo:  "repo-me",
+			Tag:   "latest",
+			Image: "nzk/repo-me:latest",
+			Name:  "repo-me_latest",
 		}},
 	}
 

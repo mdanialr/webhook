@@ -10,7 +10,10 @@ type Docker []struct {
 // LookupRepo lookup for a docker in a bunch of dockers that match given
 // id name. then return it if founded otherwise error would be non nil.
 func (d *Docker) LookupRepo(id string) (Model, error) {
-	for _, s := range *d {
+	for i, s := range *d {
+		if err := s.Docker.Sanitization(); err != nil {
+			return Model{}, fmt.Errorf("failed sanitizing #%d", i+1)
+		}
 		if s.Docker.Id == id {
 			return s.Docker, nil
 		}

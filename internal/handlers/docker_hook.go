@@ -3,11 +3,11 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/mdanialr/webhook/internal/docker/client"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mdanialr/webhook/internal/docker"
+	"github.com/mdanialr/webhook/internal/docker/client"
 )
 
 // DockerHubWebhook handle incoming POST request from docker hub's webhook then send job to workers
@@ -49,6 +49,5 @@ func DockerHubWebhook(jobC chan string, hCl *http.Client) func(*fiber.Ctx) error
 		}
 
 		return c.SendStatus(fiber.StatusOK)
-
 	}
 }

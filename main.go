@@ -29,7 +29,7 @@ func main() {
 	}
 
 	// init worker channels and docker worker channel
-	ch := &worker.Channel{
+	ch := &worker.GithubChannel{
 		JobC: make(chan string, 10),
 		InfC: make(chan string, 10),
 		ErrC: make(chan string, 10),
@@ -41,7 +41,7 @@ func main() {
 	}
 	// spawn worker pool with max number based on config's max worker
 	for w := 1; w <= appConfig.MaxWorker; w++ {
-		go worker.JobCD(ch, &appConfig)
+		go worker.GithubCDWorker(ch, &appConfig)
 		go worker.DockerCDWorker(dCh, &appConfig)
 	}
 	// spawn worker to write internal logger from Hook Handler
@@ -98,7 +98,7 @@ func setup(conf *config.Model, fBuf io.Reader) (*fiber.App, error) {
 
 // logWriterFromChannel listen to channels and write every message
 // to internal logger.
-func logWriterFromChannel(ch *worker.Channel, dCh *worker.DockerChannel) {
+func logWriterFromChannel(ch *worker.GithubChannel, dCh *worker.DockerChannel) {
 	go func() {
 		for inf := range ch.InfC {
 			logger.InfL.Printf(inf)

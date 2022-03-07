@@ -9,17 +9,17 @@ import (
 
 var execCmd = exec.Command
 
-// Channel used by worker to exchange messages, either receive job
+// GithubChannel used by worker to exchange messages, either receive job
 // or send any information.
-type Channel struct {
+type GithubChannel struct {
 	JobC chan string // receive job
 	InfC chan string // send any information
 	ErrC chan string // send any error information
 }
 
-// JobCD worker that would always listen to job channel and do
+// GithubCDWorker worker that would always listen to job channel and do
 // continuous delivery based on the repo's name.
-func JobCD(ch *Channel, m *config.Model) {
+func GithubCDWorker(ch *GithubChannel, m *config.Model) {
 	for job := range ch.JobC {
 		ch.InfC <- fmt.Sprintf("START working on: %v\n", job)
 

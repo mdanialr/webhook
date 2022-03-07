@@ -77,7 +77,7 @@ log: /fake/dir
 }
 
 func TestLogWriterFromChannels(t *testing.T) {
-	ch := &worker.Channel{
+	ch := &worker.GithubChannel{
 		JobC: make(chan string, 10),
 		InfC: make(chan string, 10),
 		ErrC: make(chan string, 10),

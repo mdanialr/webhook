@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mdanialr/webhook/internal/repo"
 	"github.com/mdanialr/webhook/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -45,26 +44,29 @@ env: dev
 max_worker: 1
 service:
   - repo:
+      user: user
       name: fiber-ln
-      root: /home/nzk/dir/Fiber/light_novel/
+      path: /home/nzk/dir/Fiber/light_novel/
       opt_cmd: "go build -o bin/fiber-ln main.go && systemctl restart fiber-ln"
   - repo:
+      user: user
       name: cd_test
-      root: /home/nzk/dir/Laravel/cd_test/
+      path: /home/nzk/dir/Laravel/cd_test/
       opt_cmd: pwd
 `
 	buf = bytes.NewBufferString(fakeConfigFile)
 	t.Run("Using valid value should be pass", func(t *testing.T) {
 		mod, err := NewConfig(buf)
+		require.NoError(t, mod.Service.Sanitization())
 		require.NoError(t, err)
 
 		assert.Equal(t, "dev", mod.Env)
 		assert.Equal(t, 1, mod.MaxWorker)
-		assert.Equal(t, "fiber-ln", mod.Service[0].Repos.Name)
-		assert.Equal(t, "/home/nzk/dir/Fiber/light_novel/", mod.Service[0].Repos.RootPath)
-		assert.Equal(t, "go build -o bin/fiber-ln main.go && systemctl restart fiber-ln", mod.Service[0].Repos.Cmd)
-		assert.Equal(t, "cd_test", mod.Service[1].Repos.Name)
-		assert.Equal(t, "pwd", mod.Service[1].Repos.Cmd)
+		assert.Equal(t, "fiber-ln", mod.Service[0].Repo.Name)
+		assert.Equal(t, "/home/nzk/dir/Fiber/light_novel/", mod.Service[0].Repo.Path)
+		assert.Equal(t, "go build -o bin/fiber-ln main.go && systemctl restart fiber-ln", mod.Service[0].Repo.Cmd)
+		assert.Equal(t, "cd_test", mod.Service[1].Repo.Name)
+		assert.Equal(t, "pwd", mod.Service[1].Repo.Cmd)
 	})
 
 	fakeConfigFile = `
@@ -130,11 +132,11 @@ func TestReloadConfig(t *testing.T) {
 		PortNum: 5005,
 		Secret:  "secret",
 		LogDir:  "/home/nzk/test-app/webhook/log",
-		Service: service.Model{
-			{Repos: repo.Model{
-				Name:     "fiber-ln",
-				RootPath: "/home/nzk/dir/Fiber/light_novel/",
-				Cmd:      "go build -o bin/fiber-ln main.go && systemctl restart fiber-ln",
+		Service: service.Service{
+			{Repo: service.Model{
+				Name: "fiber-ln",
+				Path: "/home/nzk/dir/Fiber/light_novel/",
+				Cmd:  "go build -o bin/fiber-ln main.go && systemctl restart fiber-ln",
 			}},
 		},
 	}
@@ -173,7 +175,7 @@ service:
 		assert.Equal(t, newMod.Secret, oldMod.Secret)
 		assert.NotEqual(t, newMod.LogDir, oldMod.LogDir)
 		assert.NotEqual(t, len(newMod.Service), len(oldMod.Service))
-		assert.Equal(t, newMod.Service[0].Repos.Cmd, oldMod.Service[0].Repos.Cmd)
+		assert.Equal(t, newMod.Service[0].Repo.Cmd, oldMod.Service[0].Repo.Cmd)
 	})
 
 	t.Run("Injecting fake reader should be error", func(t *testing.T) {

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/mdanialr/webhook/internal/config"
-	"github.com/mdanialr/webhook/internal/repo"
 	"github.com/mdanialr/webhook/internal/service"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,21 +24,21 @@ func fakeExecCommand(command string, args ...string) *exec.Cmd {
 }
 
 func TestJobCD(t *testing.T) {
-	serviceSample := service.Model{
-		{repo.Model{
-			Name:     "repo-one",
-			RootPath: "/path/to/repo-one/",
-			Cmd:      "pwd",
+	serviceSample := service.Service{
+		{service.Model{
+			Name: "repo-one",
+			Path: "/path/to/repo-one/",
+			Cmd:  "pwd",
 		}},
-		{repo.Model{
-			Name:     "repo-two",
-			RootPath: "/path/to/repo-two/",
-			Cmd:      "systemctl reload nginx",
+		{service.Model{
+			Name: "repo-two",
+			Path: "/path/to/repo-two/",
+			Cmd:  "systemctl reload nginx",
 		}},
-		{repo.Model{
-			Name:     "repo-three",
-			RootPath: "/path/to/repo-three/",
-			Cmd:      "",
+		{service.Model{
+			Name: "repo-three",
+			Path: "/path/to/repo-three/",
+			Cmd:  "",
 		}},
 	}
 
@@ -70,13 +69,13 @@ func TestJobCD(t *testing.T) {
 	}
 
 	// prepare the channels
-	ch := &Channel{
+	ch := &GithubChannel{
 		JobC: make(chan string, 10),
 		InfC: make(chan string, 10),
 		ErrC: make(chan string, 10),
 	}
 	// spawn worker
-	go JobCD(ch, &m)
+	go GithubCDWorker(ch, &m)
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {

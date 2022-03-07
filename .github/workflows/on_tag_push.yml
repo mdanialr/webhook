@@ -13,7 +13,13 @@ jobs:
     name: Build and Release Binary
     needs: ci
     uses: ./.github/workflows/release.yml
-  webhook:
-    name: Invoke Webhook
+  send-webhook-signal:
+    name: Send Webhook Signal
     needs: ci
-    uses: ./.github/workflows/webhook.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invoke Webhook
+        uses: distributhor/workflow-webhook@v2
+        env:
+          webhook_url: ${{ secrets.WEBHOOK_URL }}
+          webhook_secret: ${{ secrets.WEBHOOK_SECRET }}

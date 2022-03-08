@@ -9,6 +9,59 @@ import (
 
 func TestService_LookupRepo(t *testing.T) {
 	serviceSample := Service{
+		{Model{Name: "repo-one", Path: "/path/to/repo-one/", Cmd: "pwd"}},
+		{Model{
+			Name: "repo-two",
+			Path: "/path/to/repo-two/",
+			Cmd:  "systemctl reload nginx",
+		}},
+		{Model{Name: "repo-y", Path: "/path/to/repo-three/"}},
+	}
+
+	testCases := []struct {
+		name       string
+		sample     Service
+		lookupName string
+		expect     Model
+		wantErr    bool
+	}{
+		{
+			name:       "Founded repo should be identical with the expected result",
+			sample:     serviceSample,
+			lookupName: "repo-one",
+			expect:     Model{Name: "repo-one", Path: "/path/to/repo-one/", Cmd: "pwd"},
+		},
+		{
+			name:       "Should not error if repo exist and founded",
+			sample:     serviceSample,
+			lookupName: "repo-y",
+			expect:     Model{Name: "repo-y", Path: "/path/to/repo-three/"},
+		},
+		{
+			name:       "Should error if repo does not exist and not found",
+			sample:     serviceSample,
+			lookupName: "repo-not-exist",
+			wantErr:    true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			out, err := tc.sample.LookupRepo(tc.lookupName)
+
+			switch tc.wantErr {
+			case false:
+				require.NoError(t, err)
+				assert.Equal(t, tc.expect, out)
+			case true:
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestService_LookupRepoById(t *testing.T) {
+	serviceSample := Service{
 		{Model{
 			User: "user",
 			Name: "repo-one",
@@ -86,7 +139,7 @@ func TestService_LookupRepo(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			out, err := tc.sample.LookupRepo(tc.lookupId)
+			out, err := tc.sample.LookupRepoById(tc.lookupId)
 
 			switch tc.wantErr {
 			case false:
@@ -104,10 +157,6 @@ func TestService_Sanitization(t *testing.T) {
 	serviceSample := []Service{
 		{{Model{
 			User: "user",
-			Name: "repo",
-			Path: "/path/to/repo",
-		}}},
-		{{Model{
 			Name: "repo",
 			Path: "/path/to/repo",
 		}}},
@@ -131,18 +180,13 @@ func TestService_Sanitization(t *testing.T) {
 			sample: serviceSample[0],
 		},
 		{
-			name:    "Should fail when any required fields are not provided in this case is `user` field",
+			name:    "Should fail when any required fields are not provided in this case is `name` field",
 			sample:  serviceSample[1],
 			wantErr: true,
 		},
 		{
-			name:    "Should fail when any required fields are not provided in this case is `name` field",
-			sample:  serviceSample[2],
-			wantErr: true,
-		},
-		{
 			name:    "Should fail when any required fields are not provided in this case is `path` field",
-			sample:  serviceSample[3],
+			sample:  serviceSample[2],
 			wantErr: true,
 		},
 	}

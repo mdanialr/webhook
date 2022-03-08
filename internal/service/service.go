@@ -7,8 +7,19 @@ type Service []struct {
 	Repo Model `yaml:"repo"`
 }
 
-// LookupRepo lookup for the repo in services that match given repo id.
-func (s *Service) LookupRepo(id string) (Model, error) {
+// LookupRepo lookup for the repo in services that match given repo name.
+func (s *Service) LookupRepo(name string) (Model, error) {
+	for _, ss := range *s {
+		if ss.Repo.Name == name {
+			return ss.Repo, nil
+		}
+	}
+
+	return Model{}, fmt.Errorf("repo not found")
+}
+
+// LookupRepoById lookup for the repo in services that match given repo id.
+func (s *Service) LookupRepoById(id string) (Model, error) {
 	for i, ss := range *s {
 		if err := ss.Repo.Sanitization(); err != nil {
 			return Model{}, fmt.Errorf("failed sanitizing #%d repo", i+1)

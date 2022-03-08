@@ -30,27 +30,18 @@ func main() {
 
 	// prepare common worker channel to store in the bag that contain all different worker channels
 	bagOfChannels := worker.BagOfChannels{
-		GithubActionChan: &worker.Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
-	}
-	// init worker channels and docker worker channel
-	ch := &worker.GithubChannel{
-		JobC: make(chan string, 10),
-		InfC: make(chan string, 10),
-		ErrC: make(chan string, 10),
-	}
-	dCh := &worker.DockerChannel{
-		JobC: make(chan string, 10),
-		InfC: make(chan string, 10),
-		ErrC: make(chan string, 10),
+		GithubActionChan:  &worker.Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
+		GithubWebhookChan: &worker.Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
+		DockerWebhookChan: &worker.Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
 	}
 	// spawn worker pool with max number based on config's max worker
 	for w := 1; w <= appConfig.MaxWorker; w++ {
-		go worker.GithubCDWorker(ch, &appConfig)
-		go worker.DockerCDWorker(dCh, &appConfig)
+		go worker.GithubCDWorker(bagOfChannels, &appConfig)
+		go worker.DockerCDWorker(bagOfChannels, &appConfig)
 		go worker.GithubActionWebhookWorker(bagOfChannels, &appConfig)
 	}
 	// spawn worker to write internal logger from Hook Handler
-	go logWriterFromChannel(ch, dCh, bagOfChannels)
+	go logWriterFromChannel(bagOfChannels)
 
 	// init custom app logger
 	appConfig.LogFile, err = os.OpenFile(appConfig.LogDir+"log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
@@ -59,7 +50,7 @@ func main() {
 	}
 
 	cl := &http.Client{}
-	routes.SetupRoutes(app, &appConfig, logger.InfL, bagOfChannels, ch.JobC, dCh.JobC, cl)
+	routes.SetupRoutes(app, &appConfig, logger.InfL, bagOfChannels, cl)
 
 	logger.InfL.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)
 	logger.ErrL.Fatalln(app.Listen(fmt.Sprintf("%s:%v", appConfig.Host, appConfig.PortNum)))
@@ -103,7 +94,7 @@ func setup(conf *config.Model, fBuf io.Reader) (*fiber.App, error) {
 
 // logWriterFromChannel listen to channels and write every message
 // to internal logger.
-func logWriterFromChannel(ch *worker.GithubChannel, dCh *worker.DockerChannel, bag worker.BagOfChannels) {
+func logWriterFromChannel(bag worker.BagOfChannels) {
 	go func() {
 		for inf := range bag.GithubActionChan.InfC {
 			logger.InfL.Printf(inf)
@@ -116,22 +107,23 @@ func logWriterFromChannel(ch *worker.GithubChannel, dCh *worker.DockerChannel, b
 	}()
 
 	go func() {
-		for inf := range ch.InfC {
+		for inf := range bag.GithubWebhookChan.InfC {
 			logger.InfL.Printf(inf)
 		}
 	}()
 	go func() {
-		for err := range ch.ErrC {
+		for err := range bag.GithubWebhookChan.ErrC {
 			logger.ErrL.Printf(err)
 		}
 	}()
+
 	go func() {
-		for inf := range dCh.InfC {
+		for inf := range bag.DockerWebhookChan.InfC {
 			logger.InfL.Printf(inf)
 		}
 	}()
 	go func() {
-		for err := range dCh.ErrC {
+		for err := range bag.DockerWebhookChan.ErrC {
 			logger.ErrL.Printf(err)
 		}
 	}()

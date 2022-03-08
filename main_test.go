@@ -88,5 +88,5 @@ func TestLogWriterFromChannels(t *testing.T) {
 		ErrC: make(chan string, 10),
 	}
 
-	logWriterFromChannel(ch, dCh)
+	logWriterFromChannel(ch, dCh, worker.BagOfChannels{})
 }

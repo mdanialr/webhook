@@ -10,9 +10,10 @@ import (
 	"github.com/mdanialr/webhook/internal/handlers"
 	nzLog "github.com/mdanialr/webhook/internal/logger"
 	"github.com/mdanialr/webhook/internal/middlewares"
+	"github.com/mdanialr/webhook/internal/worker"
 )
 
-func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, jobC chan string, dC chan string, hCl *http.Client) {
+func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, bag worker.BagOfChannels, jobC chan string, dC chan string, hCl *http.Client) {
 	// Built-in fiber middlewares
 	app.Use(recover.New())
 	// Use log file only in production
@@ -38,6 +39,10 @@ func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, jobC cha
 	app.Post("/docker/webhook",
 		middlewares.ReloadConfig(conf, l),
 		handlers.DockerHubWebhook(dC, hCl),
+	)
+	app.Post("/github/webhook",
+		middlewares.SecretToken(conf),
+		handlers.GithubAction(bag.GithubActionChan.JobC),
 	)
 
 	// Custom middlewares AFTER endpoints

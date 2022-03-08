@@ -13,7 +13,7 @@ import (
 	"github.com/mdanialr/webhook/internal/worker"
 )
 
-func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, bag worker.BagOfChannels, jobC chan string, dC chan string, hCl *http.Client) {
+func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, bag worker.BagOfChannels, hCl *http.Client) {
 	// Built-in fiber middlewares
 	app.Use(recover.New())
 	// Use log file only in production
@@ -34,11 +34,11 @@ func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, bag work
 	app.Post("/hook/:repo",
 		middlewares.ReloadConfig(conf, l),
 		middlewares.SecretToken(conf),
-		handlers.Hook(conf, jobC),
+		handlers.Hook(conf, bag.GithubWebhookChan.JobC),
 	)
 	app.Post("/docker/webhook",
 		middlewares.ReloadConfig(conf, l),
-		handlers.DockerHubWebhook(dC, hCl),
+		handlers.DockerHubWebhook(bag.DockerWebhookChan.JobC, hCl),
 	)
 	app.Post("/github/webhook",
 		middlewares.SecretToken(conf),

@@ -17,20 +17,22 @@ func (f *fakeLogger) Println(_ ...interface{}) {}
 func TestSetupRoutes(t *testing.T) {
 	var fakeServer = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {}))
 	bags := worker.BagOfChannels{
-		GithubActionChan: &worker.Channel{JobC: make(chan string)},
+		GithubActionChan:  &worker.Channel{JobC: make(chan string)},
+		GithubWebhookChan: &worker.Channel{JobC: make(chan string)},
+		DockerWebhookChan: &worker.Channel{JobC: make(chan string)},
 	}
 
 	t.Run("1# Success test", func(t *testing.T) {
 		conf := config.Model{Secret: "1"}
 		app := fiber.New()
 
-		SetupRoutes(app, &conf, &fakeLogger{}, bags, make(chan string), make(chan string), fakeServer.Client())
+		SetupRoutes(app, &conf, &fakeLogger{}, bags, fakeServer.Client())
 	})
 
 	t.Run("2# Success test", func(t *testing.T) {
 		conf := config.Model{Secret: "1", EnvIsProd: true}
 		app := fiber.New()
 
-		SetupRoutes(app, &conf, &fakeLogger{}, bags, make(chan string), make(chan string), fakeServer.Client())
+		SetupRoutes(app, &conf, &fakeLogger{}, bags, fakeServer.Client())
 	})
 }

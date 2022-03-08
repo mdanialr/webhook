@@ -57,13 +57,11 @@ func TestDockerCDWorker(t *testing.T) {
 	}
 
 	// prepare the channels
-	ch := &DockerChannel{
-		JobC: make(chan string, 10),
-		InfC: make(chan string, 10),
-		ErrC: make(chan string, 10),
+	bag := BagOfChannels{
+		DockerWebhookChan: &Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
 	}
 	// spawn worker
-	go DockerCDWorker(ch, &conf)
+	go DockerCDWorker(bag, &conf)
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -71,11 +69,11 @@ func TestDockerCDWorker(t *testing.T) {
 			defer func() { execCmd = exec.Command }()
 
 			var gotErr uint8
-			ch.JobC <- tt.job
+			bag.DockerWebhookChan.JobC <- tt.job
 
 			if tt.wantErr {
 				select {
-				case <-ch.ErrC:
+				case <-bag.DockerWebhookChan.ErrC:
 					gotErr++
 				}
 			}

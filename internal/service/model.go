@@ -17,9 +17,6 @@ type Model struct {
 
 // Sanitization check and sanitize config Model's instance.
 func (m *Model) Sanitization() error {
-	if m.User == "" {
-		return fmt.Errorf("`user` field is required")
-	}
 	if m.Name == "" {
 		return fmt.Errorf("`name` is required")
 	}
@@ -29,6 +26,9 @@ func (m *Model) Sanitization() error {
 
 	if !strings.HasPrefix(m.Path, "/") {
 		m.Path = "/" + m.Path
+	}
+	if m.User == "" {
+		m.User = "user"
 	}
 	if m.Branch == "" {
 		m.Branch = "master"

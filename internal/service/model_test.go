@@ -15,19 +15,19 @@ func TestModel_Sanitization(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "Should error when `user` field is not provided",
-			sample:  Model{Name: "repo"},
-			wantErr: true,
-		},
-		{
 			name:    "Should error when `name` field is not provided",
 			sample:  Model{},
 			wantErr: true,
 		},
 		{
 			name:    "Should error when `path` field is not provided",
-			sample:  Model{Name: "repo", User: "user"},
+			sample:  Model{Name: "repo"},
 			wantErr: true,
+		},
+		{
+			name:   "Default value for `user` field if not provided is 'user'",
+			sample: Model{Name: "repo", Path: "/fake/path"},
+			expect: Model{Name: "repo", User: "user", Path: "/fake/path", Branch: "master", Id: "user_repo_master"},
 		},
 		{
 			name:   "Default value for `branch` field if not provided is 'master'",

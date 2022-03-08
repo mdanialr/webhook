@@ -69,13 +69,11 @@ func TestJobCD(t *testing.T) {
 	}
 
 	// prepare the channels
-	ch := &GithubChannel{
-		JobC: make(chan string, 10),
-		InfC: make(chan string, 10),
-		ErrC: make(chan string, 10),
+	bag := BagOfChannels{
+		GithubWebhookChan: &Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
 	}
 	// spawn worker
-	go GithubCDWorker(ch, &m)
+	go GithubCDWorker(bag, &m)
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -83,11 +81,11 @@ func TestJobCD(t *testing.T) {
 			defer func() { execCmd = exec.Command }()
 
 			var gotErr uint8
-			ch.JobC <- tt.job
+			bag.GithubWebhookChan.JobC <- tt.job
 
 			if tt.isErr {
 				select {
-				case <-ch.ErrC:
+				case <-bag.GithubWebhookChan.ErrC:
 					gotErr++
 				}
 			}

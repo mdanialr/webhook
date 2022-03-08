@@ -28,6 +28,10 @@ func main() {
 		log.Fatalln("failed setup the app:", err)
 	}
 
+	// prepare common worker channel to store in the bag that contain all different worker channels
+	bagOfChannels := worker.BagOfChannels{
+		GithubActionChan: &worker.Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
+	}
 	// init worker channels and docker worker channel
 	ch := &worker.GithubChannel{
 		JobC: make(chan string, 10),
@@ -43,9 +47,10 @@ func main() {
 	for w := 1; w <= appConfig.MaxWorker; w++ {
 		go worker.GithubCDWorker(ch, &appConfig)
 		go worker.DockerCDWorker(dCh, &appConfig)
+		go worker.GithubActionWebhookWorker(bagOfChannels, &appConfig)
 	}
 	// spawn worker to write internal logger from Hook Handler
-	go logWriterFromChannel(ch, dCh)
+	go logWriterFromChannel(ch, dCh, bagOfChannels)
 
 	// init custom app logger
 	appConfig.LogFile, err = os.OpenFile(appConfig.LogDir+"log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
@@ -54,7 +59,7 @@ func main() {
 	}
 
 	cl := &http.Client{}
-	routes.SetupRoutes(app, &appConfig, logger.InfL, ch.JobC, dCh.JobC, cl)
+	routes.SetupRoutes(app, &appConfig, logger.InfL, bagOfChannels, ch.JobC, dCh.JobC, cl)
 
 	logger.InfL.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)
 	logger.ErrL.Fatalln(app.Listen(fmt.Sprintf("%s:%v", appConfig.Host, appConfig.PortNum)))
@@ -98,7 +103,18 @@ func setup(conf *config.Model, fBuf io.Reader) (*fiber.App, error) {
 
 // logWriterFromChannel listen to channels and write every message
 // to internal logger.
-func logWriterFromChannel(ch *worker.GithubChannel, dCh *worker.DockerChannel) {
+func logWriterFromChannel(ch *worker.GithubChannel, dCh *worker.DockerChannel, bag worker.BagOfChannels) {
+	go func() {
+		for inf := range bag.GithubActionChan.InfC {
+			logger.InfL.Printf(inf)
+		}
+	}()
+	go func() {
+		for err := range bag.GithubActionChan.ErrC {
+			logger.ErrL.Printf(err)
+		}
+	}()
+
 	go func() {
 		for inf := range ch.InfC {
 			logger.InfL.Printf(inf)

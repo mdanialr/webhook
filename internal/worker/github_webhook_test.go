@@ -5,23 +5,23 @@ import (
 	"testing"
 
 	"github.com/mdanialr/webhook/internal/config"
-	"github.com/mdanialr/webhook/internal/service"
+	"github.com/mdanialr/webhook/internal/github"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJobCD(t *testing.T) {
-	serviceSample := service.Service{
-		{service.Model{
+	serviceSample := github.Service{
+		{github.Model{
 			Name: "repo-one",
 			Path: "/path/to/repo-one/",
 			Cmd:  "pwd",
 		}},
-		{service.Model{
+		{github.Model{
 			Name: "repo-two",
 			Path: "/path/to/repo-two/",
 			Cmd:  "systemctl reload nginx",
 		}},
-		{service.Model{
+		{github.Model{
 			Name: "repo-three",
 			Path: "/path/to/repo-three/",
 			Cmd:  "",

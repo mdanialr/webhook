@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http/httptest"
 	"testing"
 
@@ -12,49 +13,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var fakeConfigFile = `
-env: prod
-port: 5050
-secret: secret
-log: /var/log/webhook/log
-service:
-  - repo:
-      name: fiber-ln
-      root: /home/nzk/dir/Fiber/light_novel/
-      opt_cmd: "go build -o bin/fiber-ln main.go && systemctl restart fiber-ln"
-  - repo:
-      name: cd_test
-      root: /home/nzk/dir/Laravel/cd_test/
-      opt_cmd: pwd
-`
-
-var sampleRequestBody = []string{
-	`
+var payloadGithubWebhook = `
 {
   "ref": "refs/heads/main",
   "commits": [
     {
-      "message": ":test your ass",
+      "message": "test your ass",
       "committer": {
-        "username": "nzk"
+        "username": "user"
       }
     }
   ]
 }
-`, `
-{
-  "ref": "refs/heads/master",
-  "commits": [
-    {
-      "message": ":testing",
-      "committer": {
-        "username": "nzk"
-      }
-    }
-  ]
-}
-`,
-}
+`
 
 var fakeChan = make(chan string)
 
@@ -62,107 +33,83 @@ type responseJSON struct {
 	Committer string `json:"committer"`
 	Message   string `json:"message"`
 	Branch    string `json:"branch"`
-	Reload    bool   `json:"reload"`
 	Repo      string `json:"repo"`
 }
 
-func TestHook_SimpleTest(t *testing.T) {
+func TestHook(t *testing.T) {
+	const (
+		ROUTE   = "/hook/"
+		REQUEST = ROUTE + "repo"
+	)
+	var expectedResponseJson = responseJSON{
+		Repo: "repo", Branch: "main",
+		Message:   "test your ass",
+		Committer: "user",
+	}
+
 	testCases := []struct {
 		name             string
-		route            string
-		method           string
-		expectedResponse responseJSON
-		expectedCode     int
-		expectedMIME     string
-		isErr            bool
+		reqBody          io.Reader
+		contentType      string
+		expectStatusCode int
+		wantErr          bool
 	}{
 		{
-			name: "POST /hook/x-repo : Should return 200 and JSON response that" +
-				"match with the params 'x-repo'",
-			route:            "/hook/x-repo",
-			method:           fiber.MethodPost,
-			expectedResponse: responseJSON{Repo: "x-repo"},
-			expectedCode:     200,
-			expectedMIME:     fiber.MIMEApplicationJSON,
+			name:             "Should error and return `400` status code when sending request other than json format",
+			reqBody:          nil,
+			expectStatusCode: fiber.StatusBadRequest,
+			wantErr:          true,
 		},
 		{
-			name:         "POST /hook/ : Route w/o params should not found and return 404",
-			route:        "/hook/",
-			method:       fiber.MethodPost,
-			expectedCode: 404,
-			expectedMIME: fiber.MIMEApplicationForm,
-			isErr:        true,
+			name:             "Should error and return `400` status code when sending empty body request even its correct json content-type",
+			reqBody:          nil,
+			contentType:      fiber.MIMEApplicationJSON,
+			expectStatusCode: fiber.StatusBadRequest,
+			wantErr:          true,
 		},
 		{
-			name:         "POST /err : Route Not found Should return 404",
-			route:        "/err",
-			method:       fiber.MethodPost,
-			expectedCode: 404,
-			expectedMIME: fiber.MIMEApplicationForm,
-			isErr:        true,
+			name:             "Should error and return `400` status code when sending correct body request but not json content-type",
+			reqBody:          bytes.NewBufferString(payloadGithubWebhook),
+			expectStatusCode: fiber.StatusBadRequest,
+			wantErr:          true,
+		},
+		{
+			name:             "Should pass when sending correct json format and contain correct json structure",
+			reqBody:          bytes.NewBufferString(payloadGithubWebhook),
+			contentType:      fiber.MIMEApplicationJSON,
+			expectStatusCode: fiber.StatusOK,
+		},
+		{
+			name:             "Should return correct json structure if test is pass",
+			reqBody:          bytes.NewBufferString(payloadGithubWebhook),
+			contentType:      fiber.MIMEApplicationJSON,
+			expectStatusCode: fiber.StatusOK,
 		},
 	}
 
-	buf := bytes.NewBufferString(fakeConfigFile)
-
-	mod, err := config.NewConfig(buf)
-	require.NoError(t, err)
-
 	app := fiber.New()
-	app.Post("/hook/:repo", Hook(mod, fakeChan))
+	app.Post(ROUTE+":repo", Hook(&config.Model{}, fakeChan))
 
-	for i, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
-			switch tt.isErr {
+	for i, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(fiber.MethodPost, REQUEST, tc.reqBody)
+			req.Header.Set("content-type", tc.contentType)
+
+			res, err := app.Test(req)
+			require.NoError(t, err)
+
+			switch tc.wantErr {
+			case true:
+				assert.Equal(t, tc.expectStatusCode, res.StatusCode)
 			case false:
-				buf := bytes.NewBufferString(sampleRequestBody[0])
-				req := httptest.NewRequest(tt.method, tt.route, buf)
-				req.Header.Set("Content-Type", fiber.MIMEApplicationJSON)
-				res, _ := app.Test(req)
-				assert.Equal(t, tt.expectedCode, res.StatusCode)
-				assert.Equal(t, tt.expectedMIME, res.Header.Get("Content-Type"))
+				assert.Equal(t, tc.expectStatusCode, res.StatusCode)
 				var rJSON responseJSON
 				if err := json.NewDecoder(res.Body).Decode(&rJSON); err != nil {
 					t.Fatalf("failed to decode json in test #%v: %v", i+1, err)
 				}
-				assert.Equal(t, tt.expectedResponse.Repo, rJSON.Repo)
-			case true:
-				req := httptest.NewRequest(tt.method, tt.route, nil)
-				res, _ := app.Test(req)
-				assert.Equal(t, tt.expectedCode, res.StatusCode)
-				assert.NotEqual(t, tt.expectedMIME, res.Header.Get("Content-Type"))
+				assert.Equal(t, expectedResponseJson, rJSON)
 			}
-
+			assert.Equal(t, fiber.MIMEApplicationJSON, res.Header.Get("content-type"))
 		})
 	}
-
-}
-
-func TestHook_TriggerErrorTest(t *testing.T) {
-	buf := bytes.NewBufferString(fakeConfigFile)
-
-	mod, err := config.NewConfig(buf)
-	require.NoError(t, err)
-
-	app := fiber.New()
-	app.Post("/hook/:repo", Hook(mod, fakeChan))
-
-	const route = "/hook/:x-repo"
-	const expectedStatusCode = fiber.StatusBadRequest
-	const expectedMIME = fiber.MIMEApplicationJSON
-
-	t.Run("1# Posting with anything else than JSON format should error and return 400", func(t *testing.T) {
-		req := httptest.NewRequest(fiber.MethodPost, route, nil)
-		res, _ := app.Test(req)
-		assert.Equal(t, expectedStatusCode, res.StatusCode)
-		assert.Equal(t, expectedMIME, res.Header.Get("Content-Type"))
-	})
-
-	t.Run("2# Posting with empty JSON request body should error and return 400", func(t *testing.T) {
-		req := httptest.NewRequest(fiber.MethodPost, route, nil)
-		req.Header.Set("Content-Type", fiber.MIMEApplicationJSON)
-		res, _ := app.Test(req)
-		assert.Equal(t, expectedStatusCode, res.StatusCode)
-		assert.Equal(t, expectedMIME, res.Header.Get("Content-Type"))
-	})
 }

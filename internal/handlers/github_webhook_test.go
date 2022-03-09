@@ -87,7 +87,7 @@ func TestHook(t *testing.T) {
 	}
 
 	app := fiber.New()
-	app.Post(ROUTE+":repo", Hook(fakeChan))
+	app.Post(ROUTE+":repo", GithubWebhook(fakeChan))
 
 	for i, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

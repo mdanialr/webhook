@@ -34,7 +34,7 @@ func SetupRoutes(app *fiber.App, conf *config.Model, l nzLog.Interface, bag work
 	app.Post("/hook/:repo",
 		middlewares.ReloadConfig(conf, l),
 		middlewares.SecretToken(conf),
-		handlers.Hook(conf, bag.GithubWebhookChan.JobC),
+		handlers.GithubWebhook(bag.GithubWebhookChan.JobC),
 	)
 	app.Post("/docker/webhook",
 		middlewares.ReloadConfig(conf, l),

@@ -24,7 +24,9 @@ type committer struct {
 	Username string `json:"username"`
 }
 
-func Hook(jobC chan string) func(*fiber.Ctx) error {
+// GithubWebhook handle incoming payload from GitHub webhook and do the CD job based on the url path
+// and match it with repo.name in config file.
+func GithubWebhook(jobC chan string) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		repo := c.Params("repo")
 

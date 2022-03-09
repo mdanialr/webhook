@@ -7,22 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var sampleWebhookRequest = []string{
-	`
-{
-    "callback_url": "https://registry.hub.docker.com/u/nzk7/personal/hook/25j3b14dh5qGWyMe4mMcSkWwIYwwCUqcd/",
-    "push_data": {
-        "pusher": "nzk7",
-        "tag": "ci-cd-test"
-    },
-    "repository": {
-        "repo_name": "nzk7/personal",
-        "owner": "nzk7"
-    }
-}
-`,
-}
-
 func TestModel_Sanitization(t *testing.T) {
 	testCases := []struct {
 		name    string
@@ -128,7 +112,7 @@ func TestModel_ParsePullCommand(t *testing.T) {
 			name:   "Should result as expected with minimal required fields are provided",
 			sample: Model{User: "nzk", Pass: "secret", Repo: "private"},
 			expect: "docker login -u nzk -p secret && " +
-				"docker pull nzk/private:latest && " +
+				"docker pull -q nzk/private:latest && " +
 				"docker stop private_latest && " +
 				"docker container prune -f && " +
 				"docker run --name private_latest -d  nzk/private:latest",
@@ -137,7 +121,7 @@ func TestModel_ParsePullCommand(t *testing.T) {
 			name:   "Should result as expected with minimal required fields are provided and args also provided",
 			sample: Model{User: "nzk", Pass: "secret", Repo: "private", Args: "-p 1000:1000"},
 			expect: "docker login -u nzk -p secret && " +
-				"docker pull nzk/private:latest && " +
+				"docker pull -q nzk/private:latest && " +
 				"docker stop private_latest && " +
 				"docker container prune -f && " +
 				"docker run --name private_latest -d -p 1000:1000 nzk/private:latest",

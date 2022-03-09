@@ -47,7 +47,7 @@ func (m *Model) Sanitization() error {
 func (m *Model) ParsePullCommand() string {
 	str := []string{
 		fmt.Sprintf("docker login -u %s -p %s", m.User, m.Pass),
-		fmt.Sprintf("docker pull %s", m.Image),
+		fmt.Sprintf("docker pull -q %s", m.Image),
 		fmt.Sprintf("docker stop %s", m.Name),
 		"docker container prune -f",
 		fmt.Sprintf("docker run --name %s -d %s %s", m.Name, m.Args, m.Image),

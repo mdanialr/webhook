@@ -115,7 +115,9 @@ func TestModel_ParsePullCommand(t *testing.T) {
 				"docker pull -q nzk/private:latest && " +
 				"docker stop private_latest && " +
 				"docker container prune -f && " +
-				"docker run --name private_latest -d  nzk/private:latest",
+				"docker run --name private_latest -d  nzk/private:latest && " +
+				`docker image prune --filter "dangling=true" -f && ` +
+				"docker logout",
 		},
 		{
 			name:   "Should result as expected with minimal required fields are provided and args also provided",
@@ -124,7 +126,9 @@ func TestModel_ParsePullCommand(t *testing.T) {
 				"docker pull -q nzk/private:latest && " +
 				"docker stop private_latest && " +
 				"docker container prune -f && " +
-				"docker run --name private_latest -d -p 1000:1000 nzk/private:latest",
+				"docker run --name private_latest -d -p 1000:1000 nzk/private:latest && " +
+				`docker image prune --filter "dangling=true" -f && ` +
+				"docker logout",
 		},
 	}
 

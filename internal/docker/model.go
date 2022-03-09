@@ -51,6 +51,8 @@ func (m *Model) ParsePullCommand() string {
 		fmt.Sprintf("docker stop %s", m.Name),
 		"docker container prune -f",
 		fmt.Sprintf("docker run --name %s -d %s %s", m.Name, m.Args, m.Image),
+		`docker image prune --filter "dangling=true" -f`,
+		"docker logout",
 	}
 
 	return strings.Join(str, " && ")

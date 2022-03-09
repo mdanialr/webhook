@@ -25,6 +25,10 @@ func (r *RequestPayload) CreateId() {
 	r.RepoName = splitRepo[len(splitRepo)-1]
 	r.Branch = splitBr[len(splitBr)-1]
 
+	if splitBr[1] == "tags" {
+		r.Branch = splitBr[1]
+	}
+
 	r.Id = fmt.Sprintf(
 		"%s_%s_%s",
 		r.User, r.RepoName, r.Branch,

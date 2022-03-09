@@ -22,6 +22,16 @@ func TestRequestPayload_CreateId(t *testing.T) {
 			sample: RequestPayload{Repo: "us/repo-y", Ref: "refs/heads/stable"},
 			expect: RequestPayload{Repo: "us/repo-y", Ref: "refs/heads/stable", User: "us", RepoName: "repo-y", Branch: "stable", Id: "us_repo-y_stable"},
 		},
+		{
+			name:   "1# Should use branch `tags` instead if the payload is a tag",
+			sample: RequestPayload{Repo: "user/repo", Ref: "refs/tags/v1.0"},
+			expect: RequestPayload{Repo: "user/repo", Ref: "refs/tags/v1.0", User: "user", RepoName: "repo", Branch: "tags", Id: "user_repo_tags"},
+		},
+		{
+			name:   "2# Should use the branch `tags` instead if the payload is a tag",
+			sample: RequestPayload{Repo: "user/repo", Ref: "refs/tags/v2.4"},
+			expect: RequestPayload{Repo: "user/repo", Ref: "refs/tags/v2.4", User: "user", RepoName: "repo", Branch: "tags", Id: "user_repo_tags"},
+		},
 	}
 
 	for _, tc := range testCases {

@@ -5,19 +5,19 @@ import (
 	"testing"
 
 	"github.com/mdanialr/webhook/internal/config"
-	"github.com/mdanialr/webhook/internal/service"
+	"github.com/mdanialr/webhook/internal/github"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGithubActionWebhookWorker(t *testing.T) {
-	githubActionSamples := service.Service{
-		{service.Model{Name: "repo-one", Path: "/path/to/repo-one/", Cmd: "pwd"}},
-		{service.Model{
+	githubActionSamples := github.Service{
+		{github.Model{Name: "repo-one", Path: "/path/to/repo-one/", Cmd: "pwd"}},
+		{github.Model{
 			Name: "repo-two",
 			Path: "/path/to/repo-two/",
 			Cmd:  "systemctl reload nginx",
 		}},
-		{service.Model{Name: "repo-three", Path: "/path/to/repo-three/"}},
+		{github.Model{Name: "repo-three", Path: "/path/to/repo-three/"}},
 	}
 
 	conf := config.Model{Service: githubActionSamples}

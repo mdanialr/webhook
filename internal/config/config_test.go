@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mdanialr/webhook/internal/service"
+	"github.com/mdanialr/webhook/internal/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -130,8 +130,8 @@ func TestReloadConfig(t *testing.T) {
 		PortNum: 5005,
 		Secret:  "secret",
 		LogDir:  "/home/nzk/test-app/webhook/log",
-		Service: service.Service{
-			{Repo: service.Model{
+		Service: github.Service{
+			{Repo: github.Model{
 				Name: "fiber-ln",
 				Path: "/home/nzk/dir/Fiber/light_novel/",
 				Cmd:  "go build -o bin/fiber-ln main.go && systemctl restart fiber-ln",

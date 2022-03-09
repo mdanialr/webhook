@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mdanialr/webhook/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -88,7 +87,7 @@ func TestHook(t *testing.T) {
 	}
 
 	app := fiber.New()
-	app.Post(ROUTE+":repo", Hook(&config.Model{}, fakeChan))
+	app.Post(ROUTE+":repo", Hook(fakeChan))
 
 	for i, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

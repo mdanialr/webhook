@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mdanialr/webhook/internal/config"
 )
 
 // request hold the most outer scope of incoming JSON from GitHub Webhook
@@ -25,7 +24,7 @@ type committer struct {
 	Username string `json:"username"`
 }
 
-func Hook(conf *config.Model, jobC chan string) func(*fiber.Ctx) error {
+func Hook(jobC chan string) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		repo := c.Params("repo")
 

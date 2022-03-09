@@ -2,9 +2,7 @@ env: #dev|prod default to dev
 host: #default to localhost
 port: #default to 5050
 secret: #required
-keyword: #default to empty
-username: #default to empty
-log: #default to ./logs/
+log: #default to ./logs/ could be any directory just make sure the directory is already exists
 max_worker: #default to 1. worker to do git pull.
 service:
   - repo:

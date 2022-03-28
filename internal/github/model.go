@@ -52,7 +52,10 @@ func (m *Model) ParsePullCommand() string {
 		"git stash",
 		"git pull",
 		"git stash clear",
-		m.Cmd,
+	}
+
+	if m.Cmd != "" {
+		str = append(str, m.Cmd)
 	}
 
 	return strings.Join(str, " && ")

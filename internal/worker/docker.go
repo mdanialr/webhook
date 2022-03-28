@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/mdanialr/webhook/internal/config"
@@ -24,14 +25,18 @@ func DockerCDWorker(b BagOfChannels, conf *config.Model) {
 		cmd := dock.ParsePullCommand()
 
 		// execute the command
-		res, err := execCmd("sh", "-c", cmd).CombinedOutput()
+		var stdErr, stdOut bytes.Buffer
+		execCommand := execCmd("sh", "-c", cmd)
+		execCommand.Stdout = &stdOut
+		execCommand.Stderr = &stdErr
+		err = execCommand.Run()
 		if err != nil {
-			b.DockerWebhookChan.ErrC <- fmt.Sprintf("failed to execute docker pull commands: %v\n", err)
+			b.DockerWebhookChan.ErrC <- fmt.Sprintf("failed to execute git pull from remote repo: %v ~detail: %s\n", err, stdErr.String())
 			b.DockerWebhookChan.InfC <- fmt.Sprintf("DONE working on: %v\n", job)
 			return
 		}
 
-		b.DockerWebhookChan.InfC <- string(res)
+		b.DockerWebhookChan.InfC <- stdOut.String()
 		b.DockerWebhookChan.InfC <- fmt.Sprintf("DONE working on: %v\n", job)
 	}
 }

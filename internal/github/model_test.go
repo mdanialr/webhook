@@ -73,12 +73,12 @@ func TestModel_ParsePullCommand(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "1# Should result as expected even `cmd` field is empty",
+			name: "1# Should not has trailing '&&' if `cmd` field is empty otherwise would error: 'sh: -c: line 1: syntax error: unexpected end of file'",
 			sample: Model{
 				Path: "/path/to/this/test-repo/",
 				Cmd:  "",
 			},
-			expected: "cd /path/to/this/test-repo/ && git stash && git pull && git stash clear && ",
+			expected: "cd /path/to/this/test-repo/ && git stash && git pull && git stash clear",
 		},
 		{
 			name: "2# Should result as expected with `cmd` field provided",

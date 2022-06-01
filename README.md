@@ -77,3 +77,6 @@ A service that will listen to incoming request and do a CD job based on the inco
     ```
     sudo systemctl enable webhook.service --now
     ```
+
+# License
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE "LICENSE") file for details.

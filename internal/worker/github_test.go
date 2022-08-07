@@ -4,23 +4,18 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/mdanialr/webhook/internal/config"
-	"github.com/mdanialr/webhook/internal/github"
+	"github.com/mdanialr/webhook/internal/model"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGithubActionWebhookWorker(t *testing.T) {
-	githubActionSamples := github.Service{
-		{github.Model{Name: "repo-one", Path: "/path/to/repo-one/", Cmd: "pwd"}},
-		{github.Model{
-			Name: "repo-two",
-			Path: "/path/to/repo-two/",
-			Cmd:  "systemctl reload nginx",
-		}},
-		{github.Model{Name: "repo-three", Path: "/path/to/repo-three/"}},
+	githubActionSamples := model.Service{
+		Github: []*model.Repo{
+			{Name: "repo-one", Path: "/path/to/repo-one/", CMD: []string{"pwd"}},
+			{Name: "repo-two", Path: "/path/to/repo-two/", CMD: []string{"systemctl reload nginx"}},
+			{Name: "repo-three", Path: "/path/to/repo-three/"},
+		},
 	}
-
-	conf := config.Model{Service: githubActionSamples}
 
 	testCases := []struct {
 		name     string
@@ -45,7 +40,7 @@ func TestGithubActionWebhookWorker(t *testing.T) {
 		GithubActionChan: &Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
 	}
 	// spawn worker
-	go GithubActionWebhookWorker(bag, &conf)
+	go GithubActionWebhookWorker(bag, &githubActionSamples)
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {

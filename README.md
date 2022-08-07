@@ -36,7 +36,8 @@ github:
 ### Optional (_Integrate with systemd_)
 ```bash
 [Unit]
-Description=instance to serve webhook service After=network.target
+Description=instance to serve webhook service
+After=network.target
 
 [Service]
 User=root

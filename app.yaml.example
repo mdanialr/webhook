@@ -1,0 +1,16 @@
+env: prod # default is dev when not set. prod will write all logs to the files in the designated folder in log keyword below.
+host: 127.0.0.1 # default is 127.0.0.1
+port: 7575 # default is 7575
+secret: secret # this secret must be the same as in the GitHub Actions workflow
+log: /path/to/where/log/file/is/stored # default is /tmp
+max_worker: 1 # default is 1. this is worker count that will run the 'commands'. 1 is already good enough.
+github:
+  - name: # required
+    user: # required
+    branch: # required
+    tags: # optional, default is false. this will listen only to tags ref heads.
+    event: # optional, default is push. this will listen only to push event.
+    path: # required. this the path where the 'commands' will be executed.
+    commands: | # optional. this is the commands that will be executed whenever the event is triggered.
+      echo hello
+      echo world

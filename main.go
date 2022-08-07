@@ -1,31 +1,48 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/mdanialr/webhook/internal/config"
-	"github.com/mdanialr/webhook/internal/handlers"
-	"github.com/mdanialr/webhook/internal/logger"
+	"github.com/mdanialr/webhook/internal/app"
+	"github.com/mdanialr/webhook/internal/model"
 	"github.com/mdanialr/webhook/internal/routes"
 	"github.com/mdanialr/webhook/internal/worker"
+	"github.com/mdanialr/webhook/pkg/config"
+	"github.com/mdanialr/webhook/pkg/logger"
 )
 
 func main() {
-	f, err := os.ReadFile("app-config.yaml")
+	conf, err := config.InitConfig(".")
 	if err != nil {
-		log.Fatalln("failed to read config file:", err)
+		log.Fatalln("failed to init config file:", err)
+	}
+	if err = config.SetupDefault(conf); err != nil {
+		log.Fatalln("failed to sanitize and setup default config:", err)
 	}
 
-	var appConfig config.Model
-	app, err := setup(&appConfig, bytes.NewReader(f))
+	var svc model.Service
+	if err = conf.Unmarshal(&svc); err != nil {
+		log.Fatalln("failed to unmarshal config to service model:", err)
+	}
+	// run parsing ID and validate it to make sure required fields are set.
+	if err = svc.ValidateAndParseID(); err != nil {
+		log.Fatalln("failed to validate and parse github config:", err)
+	}
+
+	infoLogger, err := logger.InitInfoLogger(conf)
 	if err != nil {
-		log.Fatalln("failed setup the app:", err)
+		log.Fatalln("failed to init info logger:", err)
+	}
+	errLogger, err := logger.InitErrorLogger(conf)
+	if err != nil {
+		log.Fatalln("failed to init error logger:", err)
+	}
+	appConfig := &config.AppConfig{
+		Config: conf,
+		InfL:   infoLogger,
+		ErrL:   errLogger,
 	}
 
 	// prepare common worker channel to store in the bag that contain all different worker channels
@@ -33,61 +50,25 @@ func main() {
 		GithubActionChan: &worker.Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
 	}
 	// spawn worker pool with max number based on config's max worker
-	for w := 1; w <= appConfig.MaxWorker; w++ {
-		go worker.GithubCDWorker(bagOfChannels, &appConfig)
-		go worker.DockerCDWorker(bagOfChannels, &appConfig)
-		go worker.GithubActionWebhookWorker(bagOfChannels, &appConfig)
+	for w := 1; w <= conf.GetInt("max_worker"); w++ {
+		go worker.GithubActionWebhookWorker(bagOfChannels, &svc)
 	}
 	// spawn worker to write internal logger from Hook Handler
-	go logWriterFromChannel(bagOfChannels)
+	go logWriterFromChannel(bagOfChannels, appConfig)
 
-	// init custom app logger
-	appConfig.LogFile, err = os.OpenFile(appConfig.LogDir+"log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
+	// init custom fiber app logger
+	logFile, err := os.OpenFile(conf.GetString("log")+"log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
 	if err != nil {
 		log.Fatalln("failed to open|create log file:", err)
 	}
 
-	cl := &http.Client{}
-	routes.SetupRoutes(app, &appConfig, logger.InfL, bagOfChannels, cl)
+	fiberApp := app.InitApp(appConfig, logFile)
+	routes.SetupRoutes(fiberApp, appConfig, bagOfChannels, &svc)
 
-	logger.InfL.Printf("listening on %s:%v\n", appConfig.Host, appConfig.PortNum)
-	logger.ErrL.Fatalln(app.Listen(fmt.Sprintf("%s:%v", appConfig.Host, appConfig.PortNum)))
-}
-
-// setup prepare everything that necessary before starting this app.
-func setup(conf *config.Model, fBuf io.Reader) (*fiber.App, error) {
-	// init and load the config file.
-	newConf, err := config.NewConfig(fBuf)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config file: %v\n", err)
-	}
-	*conf = *newConf
-	if err = conf.Sanitization(); err != nil {
-		return nil, fmt.Errorf("failed sanitizing config: %v\n", err)
-	}
-	conf.SanitizationLog()
-	if err = conf.Dockers.Sanitization(); err != nil {
-		return nil, fmt.Errorf("failed sanitizing docker config: %s\n", err)
-	}
-
-	// Init internal logging.
-	if err := logger.InitLogger(conf); err != nil {
-		return nil, fmt.Errorf("failed to init internal logging: %v\n", err)
-	}
-
-	// if app in production use hostname from Nginx instead.
-	var proxyHeader string
-	if conf.EnvIsProd {
-		proxyHeader = "X-Real-Ip"
-	}
-
-	app := fiber.New(fiber.Config{
-		DisableStartupMessage: conf.EnvIsProd,
-		ErrorHandler:          handlers.DefaultError,
-		ProxyHeader:           proxyHeader,
-	})
-
-	return app, nil
+	host := conf.GetString("host")
+	port := conf.GetInt("port")
+	appConfig.InfL.Printf("listening on %s:%d\n", host, port)
+	appConfig.ErrL.Fatalln(fiberApp.Listen(fmt.Sprintf("%s:%d", host, port)))
 }
 
 // logWriterFromChannel listen to channels and write every message

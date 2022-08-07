@@ -30,9 +30,7 @@ func main() {
 
 	// prepare common worker channel to store in the bag that contain all different worker channels
 	bagOfChannels := worker.BagOfChannels{
-		GithubActionChan:  &worker.Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
-		GithubWebhookChan: &worker.Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
-		DockerWebhookChan: &worker.Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
+		GithubActionChan: &worker.Channel{JobC: make(chan string, 10), InfC: make(chan string, 10), ErrC: make(chan string, 10)},
 	}
 	// spawn worker pool with max number based on config's max worker
 	for w := 1; w <= appConfig.MaxWorker; w++ {
@@ -94,37 +92,15 @@ func setup(conf *config.Model, fBuf io.Reader) (*fiber.App, error) {
 
 // logWriterFromChannel listen to channels and write every message
 // to internal logger.
-func logWriterFromChannel(bag worker.BagOfChannels) {
+func logWriterFromChannel(bag worker.BagOfChannels, conf *config.AppConfig) {
 	go func() {
 		for inf := range bag.GithubActionChan.InfC {
-			logger.InfL.Printf(inf)
+			conf.InfL.Printf(inf)
 		}
 	}()
 	go func() {
 		for err := range bag.GithubActionChan.ErrC {
-			logger.ErrL.Printf(err)
-		}
-	}()
-
-	go func() {
-		for inf := range bag.GithubWebhookChan.InfC {
-			logger.InfL.Printf(inf)
-		}
-	}()
-	go func() {
-		for err := range bag.GithubWebhookChan.ErrC {
-			logger.ErrL.Printf(err)
-		}
-	}()
-
-	go func() {
-		for inf := range bag.DockerWebhookChan.InfC {
-			logger.InfL.Printf(inf)
-		}
-	}()
-	go func() {
-		for err := range bag.DockerWebhookChan.ErrC {
-			logger.ErrL.Printf(err)
+			conf.ErrL.Printf(err)
 		}
 	}()
 }

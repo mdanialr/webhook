@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/mdanialr/webhook/internal/app"
 	"github.com/mdanialr/webhook/internal/model"
@@ -57,7 +58,8 @@ func main() {
 	go logWriterFromChannel(bagOfChannels, appConfig)
 
 	// init custom fiber app logger
-	logFile, err := os.OpenFile(conf.GetString("log")+"log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
+	appLog := strings.TrimSuffix(conf.GetString("log"), "/")
+	logFile, err := os.OpenFile(fmt.Sprintf("%s/%s", appLog, "log"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0770)
 	if err != nil {
 		log.Fatalln("failed to open|create log file:", err)
 	}

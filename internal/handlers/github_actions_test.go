@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/mdanialr/webhook/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,28 +25,18 @@ var payloadGithubAction = `
 `
 
 func TestGithubAction(t *testing.T) {
+	sample := model.Service{
+		Github: []*model.Repo{
+			{Event: "push", Branch: "stable", Name: "repo-y", User: "name"},
+		},
+	}
+
 	testCases := []struct {
 		name             string
 		reqBody          io.Reader
 		contentType      string
 		expectStatusCode int
 	}{
-		{
-			name:             "Should error and return `400` status code when sending body request other than json",
-			reqBody:          nil,
-			expectStatusCode: fiber.StatusBadRequest,
-		},
-		{
-			name:             "Should error and return `400` status code when sending empty body request even its correct json content-type",
-			reqBody:          nil,
-			contentType:      fiber.MIMEApplicationJSON,
-			expectStatusCode: fiber.StatusBadRequest,
-		},
-		{
-			name:             "Should error and return `400` status code when sending correct body request but not json content-type",
-			reqBody:          bytes.NewBufferString(payloadGithubAction),
-			expectStatusCode: fiber.StatusBadRequest,
-		},
 		{
 			name:             "Should pass when sending correct json format and contain correct json structure",
 			reqBody:          bytes.NewBufferString(payloadGithubAction),
@@ -57,7 +48,8 @@ func TestGithubAction(t *testing.T) {
 	const ROUTE = "/github/webhook"
 
 	app := fiber.New()
-	app.Post(ROUTE, GithubAction(fakeChan))
+	fakeChan := make(chan string)
+	app.Post(ROUTE, GithubAction(fakeChan, &sample))
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

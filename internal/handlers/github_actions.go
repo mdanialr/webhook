@@ -1,27 +1,26 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/mdanialr/webhook/internal/github"
+	"github.com/mdanialr/webhook/internal/model"
 )
 
 // GithubAction handler that would handle incoming POST request from GitHub action workflow
 // that would trigger this webhook request.
-func GithubAction(jobC chan string) func(*fiber.Ctx) error {
+func GithubAction(jobC chan<- string, svc *model.Service) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		var reqHook github.RequestPayload
-		if err := c.BodyParser(&reqHook); err != nil {
-			c.Status(fiber.StatusBadRequest)
-			return c.JSON(fiber.Map{
-				"message": fmt.Sprintf("failed parsing request body: %v", err),
-			})
+		var reqHook model.RequestPayload
+		c.BodyParser(&reqHook)
+		reqHook.CreateID()
+
+		if repo, _ := svc.LookupGithub(reqHook.ID); repo != nil {
+			if repo.Event != reqHook.Event {
+				return c.SendStatus(200) // immediately return if event is not match.
+			}
 		}
-		reqHook.CreateId()
 
 		go func() {
-			jobC <- reqHook.Id
+			jobC <- reqHook.ID
 		}()
 
 		return c.SendStatus(200)

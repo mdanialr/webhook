@@ -8,13 +8,10 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mdanialr/webhook/internal/config"
+	"github.com/mdanialr/webhook/pkg/config"
 )
 
-// SecretToken middleware check incoming request signature, to make
-// sure incoming request come from intended source then response
-// with error if signature doesn't match.
-func SecretToken(conf config.Interface) func(*fiber.Ctx) error {
+func Auth(conf *config.AppConfig) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		s, err := searchSHA256Signature(c.GetReqHeaders())
 		if err != nil {
@@ -35,9 +32,9 @@ func SecretToken(conf config.Interface) func(*fiber.Ctx) error {
 		cSig := conf.GetSHA256Signature(c.Request().Body())
 
 		if !hmac.Equal(rSig, cSig) {
-			c.Status(fiber.StatusBadRequest)
+			c.Status(fiber.StatusUnauthorized)
 			return c.JSON(fiber.Map{
-				"response": "signature doesn't match",
+				"response": "invalid signature",
 			})
 		}
 
@@ -45,8 +42,7 @@ func SecretToken(conf config.Interface) func(*fiber.Ctx) error {
 	}
 }
 
-// searchSHA256Signature search for sha256 signature in given map,
-//return err if not found.
+// searchSHA256Signature search for sha256 signature in given map, return err if not found.
 func searchSHA256Signature(m map[string]string) (string, error) {
 	s := strings.TrimPrefix(m["X-Hub-Signature-256"], "sha256=")
 	if s == "" {
